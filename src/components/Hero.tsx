@@ -23,7 +23,7 @@ function HeroContent() {
         <Button variant="primary">صمّم ثوبك الخاص</Button>
         <Button variant="outline">احجز موعد قياس</Button>
       </div>
-      <img src="/arrow-icon.png" alt="Arrow icon" width={200} />
+      <img src="/images/arrow-icon.png" alt="Arrow icon" width={200} />
       <Link to={"/story"} className="text-gold font-semibold text-xl ">
         اكتشف الرحلة
       </Link>
@@ -40,7 +40,7 @@ function DesktopHero() {
       </div>
       <div className="w-1/2 pt-12 relative">
         <img
-          src="/Hero.png"
+          src="/images/Hero.png"
           alt="Hero Image"
           className="w-full h-full object-cover"
         />
