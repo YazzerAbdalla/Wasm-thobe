@@ -1,7 +1,8 @@
 import { Link } from "react-router-dom";
 import { useIsMobile } from "../hooks/useIsMobile";
-import Button from "./ui/Button";
+import ArrowIcon from "./ArrowIcon";
 import SectionTitle from "./SectionTitle";
+import Button from "./ui/Button";
 
 const Hero = () => {
   const isMobile = useIsMobile();
@@ -23,7 +24,7 @@ function HeroContent() {
         <Button variant="primary">صمّم ثوبك الخاص</Button>
         <Button variant="outline">احجز موعد قياس</Button>
       </div>
-      <img src="/images/arrow-icon.png" alt="Arrow icon" width={200} />
+      <ArrowIcon />
       <Link to={"/story"} className="text-gold font-semibold text-xl ">
         اكتشف الرحلة
       </Link>
@@ -57,7 +58,7 @@ function MobileHero() {
     <section
       className="relative min-h-screen flex items-center justify-center text-center lg:text-right"
       style={{
-        backgroundImage: "url('/Hero.png')",
+        backgroundImage: "url('/images/Hero.png')",
         backgroundSize: "cover",
         backgroundPosition: "center",
       }}

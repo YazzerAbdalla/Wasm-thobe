@@ -2,7 +2,7 @@
 @import "tailwindcss";
 
 /* =========================
-   Root Variables (Design System)
+  Root Variables (Design System)
 ========================= */
 :root {
   /* Fonts */
@@ -62,7 +62,7 @@
 }
 
 /* =========================
-   Base
+  Base
 ========================= */
 @layer base {
   html {
@@ -106,7 +106,7 @@
 }
 
 /* =========================
-   Buttons
+  Buttons
 ========================= */
 button {
   cursor: pointer;
@@ -119,7 +119,7 @@ button:focus-visible {
 }
 
 /* =========================
-   Utility Luxury Touch
+  Utility Luxury Touch
 ========================= */
 .gold-text {
   color: var(--color-gold);
@@ -136,7 +136,7 @@ button:focus-visible {
 }
 
 /* =========================
-   Custom Scrollbar (Luxury Gold)
+  Custom Scrollbar (Luxury Gold)
 ========================= */
 
 /* Chrome, Edge, Safari */
