@@ -1,0 +1,10 @@
+[
+  { "colorName": "Black", "fabricName": "Premium Wool", "label": "Royal Classic" },
+  { "colorName": "Black", "fabricName": "Egyptian Cotton", "label": "Royal Formal" },
+  { "colorName": "White", "fabricName": "Egyptian Cotton", "label": "Heritage Formal" },
+  { "colorName": "White", "fabricName": "Linen", "label": "Summer Elegance" },
+  { "colorName": "Navy", "fabricName": "Linen", "label": "Modern Casual" },
+  { "colorName": "Navy", "fabricName": "Premium Wool", "label": "Executive Classic" },
+  { "colorName": "Beige", "fabricName": "Linen", "label": "Desert Breeze" },
+  { "colorName": "Beige", "fabricName": "Egyptian Cotton", "label": "Refined Casual" }
+]
