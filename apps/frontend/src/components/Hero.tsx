@@ -21,7 +21,9 @@ function HeroContent() {
         ثياب نُشكّلها وفق أذواق مختارة، ومعالجة يدوية دقيقة.
       </p>
       <div className="flex gap-5 flex-wrap justify-center lg:flex-col">
-        <Button variant="primary">صمّم ثوبك الخاص</Button>
+        <Link to="/builder">
+          <Button variant="primary">صمّم ثوبك الخاص</Button>
+        </Link>
         <Button variant="outline">احجز موعد قياس</Button>
       </div>
       <ArrowIcon />

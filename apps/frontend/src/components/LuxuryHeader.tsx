@@ -1,9 +1,17 @@
 import { useState } from "react";
 import logo from "/images/logo.png";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "../features/auth/AuthContext";
 
 export default function LuxuryHeader() {
   const [open, setOpen] = useState(false);
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    logout();
+    navigate('/');
+  };
 
   return (
     <>
@@ -24,18 +32,32 @@ export default function LuxuryHeader() {
             <Link to="/contact" className="hover:text-gold">
               تواصل معنا
             </Link>
-            <Link to="/#design" className="hover:text-gold">
+            <Link to="/builder" className="hover:text-gold">
               صمّم ثوبك
             </Link>
           </nav>
 
           {/* CTA */}
-          <div className="hidden lg:block">
+          <div className="hidden lg:flex items-center gap-3">
             <Link to="/track">
               <button className="px-5 py-2 border-2 border-gold! text-white hover:bg-gold hover:text-black transition">
                 تتبع طلبك
               </button>
             </Link>
+            {user ? (
+              <button
+                onClick={handleLogout}
+                className="px-5 py-2 text-white/60 hover:text-white transition text-sm"
+              >
+                تسجيل الخروج
+              </button>
+            ) : (
+              <Link to="/login">
+                <button className="px-5 py-2 bg-gold text-black font-semibold hover:bg-yellow-400 transition text-sm">
+                  تسجيل الدخول
+                </button>
+              </Link>
+            )}
           </div>
 
           {/* Burger */}
@@ -94,7 +116,7 @@ export default function LuxuryHeader() {
             </Link>
             <Link
               onClick={() => setOpen(false)}
-              to="/design"
+              to="/builder"
               className="hover:text-gold"
             >
               صمّم ثوبك
@@ -116,10 +138,26 @@ export default function LuxuryHeader() {
           </nav>
 
           {/* CTA */}
-          <div className="mt-auto">
-            <button className="w-full py-3 bg-gold text-black rounded-md font-medium">
-              تتبع طلبك
-            </button>
+          <div className="mt-auto space-y-3">
+            <Link to="/track" onClick={() => setOpen(false)}>
+              <button className="w-full py-3 border border-gold text-gold rounded-md font-medium">
+                تتبع طلبك
+              </button>
+            </Link>
+            {user ? (
+              <button
+                onClick={() => { handleLogout(); setOpen(false); }}
+                className="w-full py-3 bg-white/10 text-white rounded-md font-medium"
+              >
+                تسجيل الخروج
+              </button>
+            ) : (
+              <Link to="/login" onClick={() => setOpen(false)}>
+                <button className="w-full py-3 bg-gold text-black rounded-md font-medium">
+                  تسجيل الدخول
+                </button>
+              </Link>
+            )}
           </div>
         </div>
       </aside>
