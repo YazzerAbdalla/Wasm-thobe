@@ -228,27 +228,27 @@ async findById(id: string): Promise<Order> {
 
 ---
 
-## Auth Flow Summary
+## Auth Flow Summary (Admin Only)
 
 ```
-Login
+Admin Login (POST /x-auth/login)
   → validate credentials
   → issue accessToken (JWT, 15 min, signed with JWT_SECRET)
   → issue refreshToken (JWT, 7 days, signed with JWT_REFRESH_SECRET)
   → save hash of refreshToken to refresh_tokens table
 
-Authenticated request
+Admin Authenticated request
   → JwtAuthGuard extracts Bearer token
   → validates against JWT_SECRET
   → injects payload as @CurrentUser()
 
-Token refresh (POST /auth/refresh)
+Admin Token refresh (POST /x-auth/refresh)
   → validate refreshToken signature and expiry
   → look up token hash in DB
   → rotate: delete old, issue new pair
   → return new accessToken + refreshToken
 
-Logout
+Admin Logout
   → delete refresh_tokens row for this user
 ```
 

@@ -8,12 +8,11 @@
 
 | Section | Tasks | Status |
 |---|---|---|
-| 1. User Authentication Flows | 4 tasks | `[ ] [ ] [ ] [ ]` |
 | 2. Thobe Builder Feature | 5 tasks | `[ ] [ ] [ ] [ ] [ ]` |
-| 3. Order Creation & Summary | 3 tasks | `[ ] [ ] [ ]` |
+| 3. Order Creation & Summary | 2 tasks | `[ ] [ ]` |
 | 4. Chatbot Integration *(optional)* | 2 tasks | `[ ] [ ]` |
 
-**Total: 14 tasks — 12 required, 2 optional**
+**Total: 9 tasks — 7 required, 2 optional**
 
 ---
 
@@ -27,60 +26,14 @@
 
 ---
 
-## Section 1 — User Authentication Flows
 
-### Task 1.1 — Create Login Page
-- [ ] Design login form UI (email + password fields)
-- [ ] Wire form to `POST /auth/login` endpoint
-- [ ] Handle error states (invalid credentials, network errors)
-- [ ] Redirect to builder on successful login
-- [ ] Add loading spinner during request
-
-**Endpoint:** `POST /auth/login`
-**Route:** `/login`
-**Component:** `src/features/auth/LoginPage.tsx`
-
----
-
-### Task 1.2 — Create Registration Page
-- [ ] Design registration form UI (email, password, confirm password)
-- [ ] Wire form to `POST /auth/register` endpoint
-- [ ] Validate fields client-side before submission
-- [ ] Handle duplicate email error from API
-- [ ] Redirect to login (or auto-login) on success
-
-**Endpoint:** `POST /auth/register`
-**Route:** `/register`
-**Component:** `src/features/auth/RegisterPage.tsx`
-
----
-
-### Task 1.3 — Implement Auth Context / Service
-- [ ] Create `AuthContext` with `user`, `accessToken`, `refreshToken` state
-- [ ] Implement `login()`, `logout()`, `refreshAccessToken()` methods
-- [ ] Persist tokens to `localStorage` (or `httpOnly` cookie if possible)
-- [ ] Auto-refresh access token before expiry (15 min window)
-- [ ] Expose `useAuth()` hook for consuming components
-
-**File:** `src/features/auth/AuthContext.tsx`
-**Notes:** Access tokens expire in 15 min. Refresh tokens expire in 7 days. Send refresh token to `POST /auth/refresh` to get a new access token.
-
----
-
-### Task 1.4 — Protect Routes
-- [ ] Create `ProtectedRoute` wrapper component
-- [ ] Redirect unauthenticated users to `/login` with `?redirect=` param
-- [ ] Apply guard to `/builder` (and `/orders/my` when built)
-- [ ] Handle edge case: user visits protected route while refresh is in-flight
-
-**Component:** `src/components/ProtectedRoute.tsx`
 
 ---
 
 ## Section 2 — Thobe Builder Feature
 
 ### Task 2.1 — Create Thobe Builder Route & Page
-- [ ] Add `/builder` route in `App.tsx` (wrap with `ProtectedRoute`)
+- [ ] Add `/builder` route in `App.tsx`
 - [ ] Create `Builder.tsx` page component with layout scaffold
 - [ ] Add CTA button on Home page linking to `/builder`
 - [ ] Add builder link in `LuxuryHeader` nav
@@ -138,6 +91,7 @@
 **Endpoint:** `POST /customization`
 **Returns:** `{ id, recommendation_label }` e.g. `"Royal Classic"`
 **Component:** `src/features/builder/RecommendationBadge.tsx`
+**Auth:** Public
 
 ---
 
@@ -165,6 +119,7 @@
 
 **Endpoint:** `POST /orders`
 **Body:** `{ customization_id, total_price }`
+**Auth:** Public
 
 ---
 
@@ -172,7 +127,7 @@
 - [ ] Create order success screen component
 - [ ] Display generated Order ID prominently (copyable)
 - [ ] Show summary of what was ordered
-- [ ] Link to order history: `GET /orders/my`
+
 - [ ] Add "Customize another" CTA back to builder
 
 **Route:** `/orders/success/:orderId`
@@ -223,9 +178,7 @@ A task is complete when:
 src/
 ├── features/
 │   ├── auth/
-│   │   ├── AuthContext.tsx        # Task 1.3
-│   │   ├── LoginPage.tsx          # Task 1.1
-│   │   └── RegisterPage.tsx       # Task 1.2
+│   │   └── AuthContext.tsx        # (Admin Auth Context - potentially for admin frontend only)
 │   ├── builder/
 │   │   ├── Builder.tsx            # Task 2.1
 │   │   ├── builderStore.ts        # Task 2.2
@@ -242,7 +195,7 @@ src/
 │   └── chat/
 │       └── ChatWidget.tsx         # Task 4.1 + 4.2
 ├── components/
-│   └── ProtectedRoute.tsx         # Task 1.4
+│   └── ProtectedRoute.tsx         # (For admin routes only)
 └── services/
     └── api.ts                     # Shared Axios instance + interceptors
 ```
@@ -253,11 +206,7 @@ src/
 
 | Task | Method | Endpoint | Auth |
 |---|---|---|---|
-| 1.1 | `POST` | `/auth/login` | Public |
-| 1.2 | `POST` | `/auth/register` | Public |
-| 1.3 | `POST` | `/auth/refresh` | Refresh token |
 | 2.3 | `GET` | `/customization/options` | Public |
-| 2.5 | `POST` | `/customization` | User |
-| 3.2 | `POST` | `/orders` | User |
-| 3.3 | `GET` | `/orders/my` | User |
+| 2.5 | `POST` | `/customization` | Public |
+| 3.2 | `POST` | `/orders` | Public |
 | 4.2 | `POST` | `/chat/message` | Public |

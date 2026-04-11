@@ -44,7 +44,7 @@ Example:
 /**
  * @file auth.service.ts
  * @module AuthModule
- * @description Handles user registration, login, JWT token issuance,
+ * @description Handles admin login, JWT token issuance,
  *              and refresh token rotation. Delegates password hashing to bcrypt.
  */
 ```
@@ -122,22 +122,19 @@ export class OrdersController {
   constructor(private readonly ordersService: OrdersService) {}
 
   /**
-   * Creates a new order for the authenticated user.
+   * Creates a new order.
+   * Supports guest users by allowing a nullable userId.
    *
-   * @param {JwtPayload} user - Injected from JWT guard
    * @param {CreateOrderDto} dto - Validated request body
    * @returns {Promise<Order>} The newly created order
    */
   @Post()
-  @UseGuards(JwtAuthGuard)
-  @ApiOperation({ summary: 'Create a new order' })
+  @ApiOperation({ summary: 'Create a new order (supports guest users)' })
   @ApiResponse({ status: 201, description: 'Order created successfully' })
-  @ApiResponse({ status: 401, description: 'Unauthorized' })
   async create(
-    @CurrentUser() user: JwtPayload,
     @Body() dto: CreateOrderDto,
   ): Promise<Order> {
-    return this.ordersService.createOrder(user.sub, dto);
+    return this.ordersService.createOrder(null, dto); // Pass null for guest users
   }
 }
 ```
@@ -228,27 +225,27 @@ async findById(id: string): Promise<Order> {
 
 ---
 
-## Auth Flow Summary
+## Auth Flow Summary (Admin Only)
 
 ```
-Login
+Admin Login (POST /x-auth/login)
   → validate credentials
   → issue accessToken (JWT, 15 min, signed with JWT_SECRET)
   → issue refreshToken (JWT, 7 days, signed with JWT_REFRESH_SECRET)
   → save hash of refreshToken to refresh_tokens table
 
-Authenticated request
+Admin Authenticated request
   → JwtAuthGuard extracts Bearer token
   → validates against JWT_SECRET
   → injects payload as @CurrentUser()
 
-Token refresh (POST /auth/refresh)
+Admin Token refresh (POST /x-auth/refresh)
   → validate refreshToken signature and expiry
   → look up token hash in DB
   → rotate: delete old, issue new pair
   → return new accessToken + refreshToken
 
-Logout
+Admin Logout
   → delete refresh_tokens row for this user
 ```
 

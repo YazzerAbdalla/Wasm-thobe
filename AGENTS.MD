@@ -2,7 +2,7 @@
 ---
 ## Project Overview
 
-**Thobe Platform** is a premium full-stack web application for customizing and ordering traditional Saudi thobes online. Users configure a thobe (color, fabric, accessories) through an interactive multi-step builder with a live CSS-driven SVG preview, receive AI-powered style recommendations, and place orders. An admin dashboard manages order status and exports data.
+**Thobe Platform** is a premium full-stack web application for customizing and ordering traditional Saudi thobes online. Users configure a thobe (color, fabric, accessories) through an interactive multi-step builder with a live CSS-driven SVG preview, receive AI-powered style recommendations, and place orders as guests. An admin dashboard manages order status and exports data, requiring administrator login.
 
 This is a **portfolio project** — code quality, architecture clarity, and documentation matter as much as functionality.
 
@@ -91,10 +91,10 @@ Next.js (Vercel)
      ▼
 NestJS (Render)
      │
-     ├── Auth Module         JWT access + refresh tokens, role guards
-     ├── Users Module        User entity, profile
+     ├── Auth Module         JWT access + refresh tokens, role guards (primarily for admin authentication)
+     ├── Users Module        User entity, profile (primarily for admin management)
      ├── Customization Module Colors, fabrics, accessories, recommendation engine
-     ├── Orders Module       Order CRUD, status transitions
+     ├── Orders Module       Order CRUD, status transitions (supports guest orders)
      ├── Chat Module         Claude API proxy, stateless conversation
      ├── Analytics Module    Aggregated usage queries
      └── Admin Module        Protected dashboard endpoints
@@ -372,10 +372,10 @@ test/
 
 | Module | Responsibility |
 |---|---|
-| `AuthModule` | Register, login, JWT access + refresh token flow |
-| `UsersModule` | User entity, profile read |
-| `CustomizationModule` | Colors, fabrics, accessories, recommendation engine |
-| `OrdersModule` | Create order, list user orders, admin status update |
+| `AuthModule` | Admin login, JWT access + refresh token flow |
+| `UsersModule` | User entity, profile (primarily for admin management) |
+|| `CustomizationModule` | Colors, fabrics, accessories, recommendation engine |
+| `OrdersModule` | Create order (supports guest users), admin status update |
 | `ChatModule` | Proxy to Anthropic Claude API, stateless conversation |
 | `AnalyticsModule` | Aggregated queries: popular colors, fabrics, order counts |
 | `AdminModule` | Protected order management, CSV export |
@@ -407,17 +407,15 @@ test/
 
 | Method | Endpoint | Auth | Description |
 |---|---|---|---|
-| POST | `/auth/register` | Public | Create account |
-| POST | `/auth/login` | Public | Login, returns access + refresh tokens |
-| POST | `/auth/refresh` | Refresh token | Get new access token |
+| POST | `/x-auth/login` | Public | Admin Login, returns access + refresh tokens |
+| POST | `/x-auth/refresh` | Refresh token | Admin: Get new access token |
 | GET | `/customization/options` | Public | All colors, fabrics, accessories |
-| POST | `/customization` | User | Save config, returns recommendation label |
-| POST | `/orders` | User | Create order |
-| GET | `/orders/my` | User | Get own orders |
+| POST | `/customization` | Public | Save config, returns recommendation label |
+| POST | `/orders` | Public | Create order (supports guest users) |
 | PATCH | `/orders/:id/status` | Admin | Update order status |
-| GET | `/admin/orders` | Admin | All orders with filter + export |
+| GET | `/x-admin/orders` | Admin | All orders with filter + export |
 | POST | `/chat/message` | Public | Send message, returns Claude response |
-| GET | `/analytics/summary` | Admin | Popular colors, fabrics, order stats |
+| GET | `/x-admin/analytics/summary` | Admin | Popular colors, fabrics, order stats |
 
 ---
 

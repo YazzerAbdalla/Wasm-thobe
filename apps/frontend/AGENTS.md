@@ -35,13 +35,11 @@ apps/frontend/src/
 ├── app/                        ← Next.js App Router pages and layouts
 │   ├── layout.tsx              ← Root layout (LuxuryHeader, AuthProvider)
 │   ├── page.tsx                ← Home page
-│   ├── login/page.tsx
-│   ├── register/page.tsx
-│   ├── builder/page.tsx        ← Protected: Thobe Builder
+│   ├── builder/page.tsx        ← Thobe Builder
 │   ├── orders/
 │   │   ├── page.tsx            ← Order history
 │   │   └── success/[id]/page.tsx
-│   └── admin/
+│   └── x-admin/
 │       └── page.tsx            ← Admin dashboard (admin role only)
 ├── components/                 ← Shared UI primitives
 │   ├── Button.tsx
@@ -125,15 +123,15 @@ export async function createOrder(dto: ICreateOrderDto): Promise<IOrder> {
 
 ---
 
-## Auth Context Pattern
+## Auth Context Pattern (Primarily for Admin or to be removed if no frontend auth)
 
 ```typescript
 interface IAuthContext {
   user: IUser | null;
   accessToken: string | null;
-  login: (dto: ILoginDto) => Promise<void>;
-  logout: () => void;
-  isAuthenticated: boolean;
+  login: (dto: ILoginDto) => Promise<void>; // Admin login
+  logout: () => void; // Admin logout
+  isAuthenticated: boolean; // Checks admin authentication status
 }
 ```
 
@@ -178,23 +176,23 @@ When adding a new color or fabric, only the CSS needs updating — no component 
 
 ## Protected Routes
 
-Wrap any page that requires auth in `ProtectedRoute`. For admin pages, pass `requiredRole="admin"`.
+Wrap any page that requires admin auth in `ProtectedRoute`. For admin pages, pass `requiredRole="admin"`.
 
 ```tsx
-// app/builder/page.tsx
+// app/x-admin/page.tsx (example)
 import ProtectedRoute from '@/components/ProtectedRoute';
-import BuilderPage from '@/features/builder/Builder';
+import AdminDashboard from '@/features/admin/AdminDashboard'; // Assuming such a component exists
 
 export default function Page() {
   return (
-    <ProtectedRoute>
-      <BuilderPage />
+    <ProtectedRoute requiredRole="admin">
+      <AdminDashboard />
     </ProtectedRoute>
   );
 }
 ```
 
-`ProtectedRoute` redirects unauthenticated users to `/login?redirect=<current-path>` and restores the redirect on successful login.
+`ProtectedRoute` redirects unauthenticated users (who are trying to access admin pages) to the admin login page and restores the redirect on successful login.
 
 ---
 
@@ -210,15 +208,11 @@ import { test, expect } from '@playwright/test';
 
 test.describe('Thobe Builder', () => {
   test.beforeEach(async ({ page }) => {
-    // Login and navigate to builder
-    await page.goto('/login');
-    await page.fill('[name=email]', 'test@example.com');
-    await page.fill('[name=password]', 'password123');
-    await page.click('[type=submit]');
-    await page.waitForURL('/builder');
+    // Navigate directly to builder as a guest
+    await page.goto('/builder');
   });
 
-  test('should complete full customization flow', async ({ page }) => {
+  test('should complete full customization flow as a guest', async ({ page }) => {
     // Step 1: select a color
     await page.click('[data-testid="color-black"]');
     await page.click('[data-testid="next-step"]');

@@ -10,17 +10,17 @@
 | Section | Tasks | Status |
 |---|---|---|
 | 0. Project Setup | 6 tasks | `[x] [x] [x] [x] [x] [x]` |
-| 1. Auth Module | 7 tasks | `[x] [x] [x] [x] [x] [x] [x]` |
-| 2. Users Module | 3 tasks | `[x] [x] [x]` |
+| 1. Auth Module | 6 tasks | `[x] [x] [x] [x] [x] [x]` |
+| 2. Users Module | 2 tasks | `[x] [x]` |
 | 3. Customization Module | 6 tasks | `[x] [x] [x] [x] [x] [ ]` |
 | 4. Recommendation Engine | 4 tasks | `[x] [x] [x] [ ]` |
-| 5. Orders Module | 6 tasks | `[ ] [ ] [ ] [ ] [ ] [ ]` |
+| 5. Orders Module | 3 tasks | `[ ] [ ] [ ]` |
 | 6. Chat Module | 4 tasks | `[ ] [ ] [ ] [ ]` |
 | 7. Admin Module | 4 tasks | `[ ] [ ] [ ] [ ]` |
 | 8. Analytics Module | 3 tasks | `[ ] [ ] [ ]` |
 | 9. Global Infrastructure | 5 tasks | `[ ] [ ] [ ] [ ] [ ]` |
 
-**Total: 48 tasks**
+**Total: 44 tasks**
 
 ---
 
@@ -225,32 +225,11 @@ export class RefreshToken {
 
 ---
 
-### Task 1.4 — Register endpoint
 
-**Write the test first.**
-
-- [ ] In `auth.service.spec.ts`, write test:
-  - `should hash the password before saving`
-  - `should throw ConflictException if email already exists`
-- [ ] Implement `AuthService.register(dto: RegisterDto): Promise<User>`
-  - Hash password with `bcrypt` (12 rounds)
-  - Save user via `UserRepository`
-  - Throw `ConflictException` on duplicate email
-- [ ] Create `src/modules/auth/dto/register.dto.ts`:
-  ```typescript
-  // email: @IsEmail()
-  // password: @IsString() @MinLength(8)
-  // phoneNumber: @IsOptional() @IsString()
-  ```
-- [ ] Add `POST /auth/register` route to controller
-- [ ] Run tests: `cd apps/backend && npm run test`
-
-**Endpoint:** `POST /api/auth/register`
-**Returns:** `201` with user object (no password field)
 
 ---
 
-### Task 1.5 — Login endpoint + JWT issuance
+### Task 1.5 — Admin Login endpoint + JWT issuance
 
 **Write the test first.**
 
@@ -267,15 +246,15 @@ export class RefreshToken {
   - Return `{ accessToken, refreshToken }`
 - [ ] Create `src/modules/auth/dto/login.dto.ts`
 - [ ] Create `src/modules/auth/interfaces/auth-tokens.interface.ts`
-- [ ] Add `POST /auth/login` route to controller
+- [ ] Add `POST /x-auth/login` route to controller
 - [ ] Run tests: `cd apps/backend && npm run test`
 
-**Endpoint:** `POST /api/auth/login`
+**Endpoint:** `POST /api/x-auth/login`
 **Returns:** `200` with `{ accessToken, refreshToken }`
 
 ---
 
-### Task 1.6 — Refresh token endpoint
+### Task 1.6 — Admin Refresh token endpoint
 
 **Write the test first.**
 
@@ -288,10 +267,10 @@ export class RefreshToken {
   - Look up token hash in `refresh_tokens` table
   - Delete old row (rotation — one-time use)
   - Issue and store new token pair
-- [ ] Add `POST /auth/refresh` route (no auth guard — uses raw token from body)
+- [ ] Add `POST /x-auth/refresh` route (no auth guard — uses raw token from body)
 - [ ] Run tests: `cd apps/backend && npm run test`
 
-**Endpoint:** `POST /api/auth/refresh`
+**Endpoint:** `POST /api/x-auth/refresh`
 **Body:** `{ refreshToken: string }`
 
 ---
@@ -306,7 +285,7 @@ export class RefreshToken {
 - [ ] Write unit tests for `RolesGuard`:
   - `should allow access when user has required role`
   - `should deny access when user role does not match`
-- [ ] Apply `JwtAuthGuard` to protected routes — verify with `cd apps/backend && npm run test:e2e`
+- [ ] Apply `JwtAuthGuard` to protected *admin* routes — verify with `cd apps/backend && npm run test:e2e`
 
 **Files:** `src/common/guards/`, `src/common/decorators/`
 
@@ -326,18 +305,7 @@ export class RefreshToken {
 
 ---
 
-### Task 2.2 — Users controller (profile endpoint)
 
-- [ ] Run: `cd apps/backend && nest generate controller modules/users --no-spec`
-- [ ] Implement `GET /users/me` — returns authenticated user's profile
-  - Protected by `JwtAuthGuard`
-  - Uses `@CurrentUser()` to get `userId` from token
-  - Calls `UsersService.findById()`
-- [ ] Write E2E test: `test/users.e2e-spec.ts`
-  - `should return 200 with user profile for authenticated user`
-  - `should return 401 without token`
-
-**Endpoint:** `GET /api/users/me`
 
 ---
 
@@ -526,29 +494,15 @@ export class RefreshToken {
   - `should throw NotFoundException if customizationId does not exist`
   - `should allow null userId for guest checkout`
 - [ ] Implement `OrdersService.createOrder(userId: string | null, dto: CreateOrderDto): Promise<Order>`
-- [ ] Add `POST /orders` route — protected by `JwtAuthGuard`
+- [ ] Add `POST /orders` route — public (supports guest checkout)
 - [ ] Write E2E test: `test/orders.e2e-spec.ts`
-  - `POST /api/orders` with valid token returns `201` with `id` and `status: PENDING`
-  - `POST /api/orders` without token returns `401`
+  - `POST /api/orders` with valid payload returns `201` with `id` and `status: PENDING`
 
 **Endpoint:** `POST /api/orders`
 
 ---
 
-### Task 5.3 — GET /orders/my (user's own orders)
 
-**Write the test first.**
-
-- [ ] Write tests:
-  - `should return array of orders belonging to the authenticated user`
-  - `should return empty array if user has no orders`
-- [ ] Implement `OrdersService.findByUser(userId: string): Promise<Order[]>`
-  - Orders ordered by `createdAt DESC`
-  - Include `customization` relation with `color` and `fabric`
-- [ ] Add `GET /orders/my` route — protected by `JwtAuthGuard`
-- [ ] Write E2E test: `GET /api/orders/my` returns `200` with array
-
-**Endpoint:** `GET /api/orders/my`
 
 ---
 
@@ -569,24 +523,11 @@ export class RefreshToken {
   - User token → `403`
   - No token → `401`
 
-**Endpoint:** `PATCH /api/orders/:id/status`
+**Endpoint:** `PATCH /api/x-admin/orders/:id/status`
 
 ---
 
-### Task 5.5 — GET /orders/my/:id (single order detail)
 
-**Write the test first.**
-
-- [ ] Write tests:
-  - `should return order with full customization detail`
-  - `should throw NotFoundException if order does not belong to user`
-- [ ] Implement `OrdersService.findOneByUser(orderId: string, userId: string): Promise<Order>`
-  - Include `customization → color, fabric, accessories` relations
-  - Throw `NotFoundException` if not found OR belongs to different user
-- [ ] Add `GET /orders/my/:id` route — protected
-- [ ] Write E2E test
-
-**Endpoint:** `GET /api/orders/my/:id`
 
 ---
 
@@ -706,10 +647,10 @@ If the user wants to speak to a human, tell them to use the "Talk to Human" butt
   - `should filter by status when provided`
   - `should filter by date range when provided`
 - [ ] Implement `AdminService.getOrders(filter: OrdersFilterDto): Promise<IPaginatedResult<Order>>`
-- [ ] Add `GET /admin/orders` route
+- [ ] Add `GET /x-admin/orders` route
 - [ ] Write E2E test for filter params
 
-**Endpoint:** `GET /api/admin/orders?status=PENDING&page=1&limit=20`
+**Endpoint:** `GET /api/x-admin/orders?status=PENDING&page=1&limit=20`
 
 ---
 
@@ -723,10 +664,10 @@ If the user wants to speak to a human, tell them to use the "Talk to Human" butt
   - Reuse filter logic from Task 7.2
   - Build CSV manually (no library needed for MVP):
     `Order ID,Status,User Email,Total Price,Created At`
-- [ ] Add `GET /admin/orders/export` route — sets response header `Content-Type: text/csv`
+- [ ] Add `GET /x-admin/orders/export` route — sets response header `Content-Type: text/csv`
 - [ ] Write E2E test: response `Content-Type` header is `text/csv`
 
-**Endpoint:** `GET /api/admin/orders/export`
+**Endpoint:** `GET /api/x-admin/orders/export`
 
 ---
 
@@ -772,7 +713,7 @@ interface IAnalyticsSummary {
 - [ ] Add `GET /analytics/summary` route
 - [ ] Write E2E test: `should return 200 with summary shape`
 
-**Endpoint:** `GET /api/analytics/summary`
+**Endpoint:** `GET /api/x-admin/analytics/summary`
 
 ---
 
@@ -829,26 +770,24 @@ interface IAnalyticsSummary {
 
 ```
 Auth:
-  POST /api/auth/register → 201
-  POST /api/auth/login → 200 with tokens
-  POST /api/auth/refresh → 200 with new tokens
+  POST /api/x-auth/login → 200 with tokens (Admin Login)
+  POST /api/x-auth/refresh → 200 with new tokens (Admin Refresh)
 
 Customization:
   GET /api/customization/options → 200 with arrays
 
 Orders:
-  POST /api/orders (authenticated) → 201
-  GET /api/orders/my (authenticated) → 200
+  POST /api/orders (guest) → 201
 
 Admin:
-  GET /api/admin/orders (admin token) → 200
-  GET /api/admin/orders (user token) → 403
+  GET /api/x-admin/orders (admin token) → 200
+  GET /api/x-admin/orders (user token) → 403
 
 Chat:
   POST /api/chat/message → 200 with response string (mocked Anthropic)
 
 Analytics:
-  GET /api/analytics/summary (admin token) → 200
+  GET /api/x-admin/analytics/summary (admin token) → 200
 ```
 
 - [ ] Run: `cd apps/backend && npm run test:e2e`
