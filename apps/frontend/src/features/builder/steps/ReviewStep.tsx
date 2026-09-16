@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { motion, AnimatePresence } from "motion/react";
 import { useNavigate } from "react-router-dom";
 import { useBuilderStore } from "../builderStore";
 import { api } from "../../../services/api";
@@ -86,17 +87,38 @@ export default function ReviewStep() {
         <h4 style={{ margin: "0 0 4px", fontSize: 15 }}>بيانات التواصل — للضيف</h4>
         <p style={{ margin: "0 0 14px", fontSize: 12, color: "var(--muted)" }}>نستخدمها فقط لتأكيد الطلب وإرسال رقم التتبع. لا حاجة لإنشاء حساب.</p>
         <div style={{ display: "flex", flexDirection: "column", gap: 6, marginBottom: 12 }}>
-          <label style={{ fontSize: 13, color: "var(--muted)" }}>
+          <label htmlFor="guest-name" style={{ fontSize: 13, color: "var(--muted)" }}>
             الاسم الكامل <span style={{ color: "var(--accent)" }}>*</span>
           </label>
-          <input value={guestName} onChange={(e) => setGuestName(e.target.value)} className="input" placeholder="مثال: عبدالله السعيد" style={inputStyle} />
+          <input
+            id="guest-name"
+            value={guestName}
+            onChange={(e) => setGuestName(e.target.value)}
+            className="input"
+            placeholder="مثال: عبدالله السعيد"
+            autoComplete="name"
+            aria-required="true"
+            aria-invalid={error && !guestName.trim() ? true : undefined}
+            aria-errormessage={error ? "review-error" : undefined}
+            style={inputStyle}
+          />
         </div>
         <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-          <label style={{ fontSize: 13, color: "var(--muted)" }}>
+          <label htmlFor="guest-phone" style={{ fontSize: 13, color: "var(--muted)" }}>
             رقم الجوال <span style={{ color: "var(--accent)" }}>*</span>
           </label>
           <div style={{ display: "flex", gap: 8, direction: "ltr" as const }}>
-            <select value={guestCC} onChange={(e) => setGuestCC(e.target.value)} className="input" style={{ flex: "0 0 132px", textAlign: "left" as const, direction: "ltr" as const, background: "rgba(255,255,255,0.08)", ...inputStyle }}>
+            <label htmlFor="guest-cc" className="sr-only">
+              مفتاح الدولة
+            </label>
+            <select
+              id="guest-cc"
+              value={guestCC}
+              onChange={(e) => setGuestCC(e.target.value)}
+              className="input"
+              aria-label="مفتاح الدولة"
+              style={{ flex: "0 0 132px", textAlign: "left" as const, direction: "ltr" as const, background: "rgba(255,255,255,0.08)", ...inputStyle }}
+            >
               <option value="+966">🇸🇦 +966 السعودية</option>
               <option value="+971">🇦🇪 +971 الإمارات</option>
               <option value="+965">🇰🇼 +965 الكويت</option>
@@ -107,13 +129,39 @@ export default function ReviewStep() {
               <option value="+962">🇯🇴 +962 الأردن</option>
               <option value="+961">🇱🇧 +961 لبنان</option>
             </select>
-            <input value={guestPhone} onChange={(e) => setGuestPhone(e.target.value.replace(/[^\d\s]/g, ""))} className="input" placeholder="5x xxx xxxx" style={{ flex: 1, direction: "ltr" as const, textAlign: "left" as const, letterSpacing: "0.04em", ...inputStyle }} inputMode="numeric" />
+            <input
+              id="guest-phone"
+              value={guestPhone}
+              onChange={(e) => setGuestPhone(e.target.value.replace(/[^\d\s]/g, ""))}
+              className="input"
+              placeholder="5x xxx xxxx"
+              autoComplete="tel"
+              aria-required="true"
+              aria-invalid={error && !guestPhone.trim() ? true : undefined}
+              aria-errormessage={error ? "review-error" : undefined}
+              style={{ flex: 1, direction: "ltr" as const, textAlign: "left" as const, letterSpacing: "0.04em", ...inputStyle }}
+              inputMode="numeric"
+            />
           </div>
           <span style={{ fontSize: 11, color: "var(--muted)", marginTop: 4 }}>مثال: +966 5x xxx xxxx — سنرسل تأكيد واتساب</span>
         </div>
       </div>
 
-      {error && <div style={{ padding: "12px 14px", borderRadius: 10, fontSize: 13, background: "rgba(185,28,28,0.2)", border: "1px solid rgba(185,28,28,0.4)", color: "#FCA5A5", marginBottom: 14 }}>{error}</div>}
+      <AnimatePresence>
+        {error && (
+          <motion.div
+            id="review-error"
+            role="alert"
+            aria-live="polite"
+            initial={{ opacity: 0, y: 6 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -6 }}
+            style={{ padding: "12px 14px", borderRadius: 10, fontSize: 13, background: "rgba(185,28,28,0.2)", border: "1px solid rgba(185,28,28,0.4)", color: "#FCA5A5", marginBottom: 14 }}
+          >
+            {error}
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <div style={{ display: "flex", gap: 10, flexWrap: "wrap" as const }}>
         <button className="btn btn-outline" onClick={() => useBuilderStore.getState().goToStep(3)}>

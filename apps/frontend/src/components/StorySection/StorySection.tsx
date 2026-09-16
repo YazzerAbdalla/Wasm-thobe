@@ -1,3 +1,5 @@
+import { motion } from "motion/react";
+
 export default function StorySection() {
   return (
     <>
@@ -20,8 +22,12 @@ export default function StorySection() {
           style={{ display: "grid", gridTemplateColumns: "1fr", gap: 20 } as React.CSSProperties}
           className="craft-grid"
         >
-          <article
+          <motion.article
             className="glass"
+            initial={{ opacity: 0, y: 28 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.22 }}
+            transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1], delay: 0 }}
             style={{ position: "relative", overflow: "hidden", minHeight: 380, display: "flex", flexDirection: "column", justifyContent: "flex-end", padding: 28, borderRadius: 20, borderColor: "rgba(255,255,255,0.06)" }}
           >
             <img
@@ -69,9 +75,16 @@ export default function StorySection() {
                 الضوء للملمس والانسدال.
               </p>
             </div>
-          </article>
+          </motion.article>
 
-          <article className="glass" style={{ position: "relative", overflow: "hidden", minHeight: 380, display: "flex", flexDirection: "column", justifyContent: "flex-end", padding: 28, borderRadius: 20 }}>
+          <motion.article
+            className="glass"
+            initial={{ opacity: 0, y: 28 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.22 }}
+            transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1], delay: 0.1 }}
+            style={{ position: "relative", overflow: "hidden", minHeight: 380, display: "flex", flexDirection: "column", justifyContent: "flex-end", padding: 28, borderRadius: 20 }}
+          >
             <img
               src="/images/story-2.png"
               alt="القصّة اليدوية — مقص على طاولة التفصيل"
@@ -117,9 +130,16 @@ export default function StorySection() {
                 مقاسك بدقة المليمتر.
               </p>
             </div>
-          </article>
+          </motion.article>
 
-          <article className="glass" style={{ position: "relative", overflow: "hidden", minHeight: 380, display: "flex", flexDirection: "column", justifyContent: "flex-end", padding: 28, borderRadius: 20 }}>
+          <motion.article
+            className="glass"
+            initial={{ opacity: 0, y: 28 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.22 }}
+            transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1], delay: 0.2 }}
+            style={{ position: "relative", overflow: "hidden", minHeight: 380, display: "flex", flexDirection: "column", justifyContent: "flex-end", padding: 28, borderRadius: 20 }}
+          >
             <img
               src="/images/story-3.png"
               alt="اللمسة الأخيرة — تطريز وأزرار صدف ومراجعة نهائية"
@@ -165,7 +185,7 @@ export default function StorySection() {
                 التغليف الحريري.
               </p>
             </div>
-          </article>
+          </motion.article>
         </div>
       </section>
 
@@ -177,7 +197,14 @@ export default function StorySection() {
           </span>
         </div>
         <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: 18 } as React.CSSProperties} className="pillars-grid">
-          <div className="glass" style={{ padding: 28, display: "flex", gap: 16, alignItems: "flex-start" }}>
+          <motion.div
+            className="glass"
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.2 }}
+            transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1], delay: 0 }}
+            style={{ padding: 28, display: "flex", gap: 16, alignItems: "flex-start" }}
+          >
             <div
               style={{
                 width: 44,
@@ -201,8 +228,15 @@ export default function StorySection() {
                 إن لم يكن الثوب على مقاس توقعك، نعيد التفصيل مجاناً خلال 14 يوماً. بلا أسئلة.
               </p>
             </div>
-          </div>
-          <div className="glass" style={{ padding: 28, display: "flex", gap: 16, alignItems: "flex-start" }}>
+          </motion.div>
+          <motion.div
+            className="glass"
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.2 }}
+            transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1], delay: 0.08 }}
+            style={{ padding: 28, display: "flex", gap: 16, alignItems: "flex-start" }}
+          >
             <div
               style={{
                 width: 44,
@@ -227,8 +261,15 @@ export default function StorySection() {
                 من القص إلى التوصيل المغلف — تتبع حي لكل مرحلة ورسالة عند كل ختم جودة.
               </p>
             </div>
-          </div>
-          <div className="glass" style={{ padding: 28, display: "flex", gap: 16, alignItems: "flex-start" }}>
+          </motion.div>
+          <motion.div
+            className="glass"
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.2 }}
+            transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1], delay: 0.16 }}
+            style={{ padding: 28, display: "flex", gap: 16, alignItems: "flex-start" }}
+          >
             <div
               style={{
                 width: 44,
@@ -252,7 +293,7 @@ export default function StorySection() {
                 شهادة منشأ لكل قماش، وحرفيّ واحد مسؤول من البداية للنهاية — اسمه على بطاقة الثوب.
               </p>
             </div>
-          </div>
+          </motion.div>
         </div>
       </section>
 

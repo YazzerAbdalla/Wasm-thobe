@@ -44,6 +44,26 @@ export default function Hero() {
           <Link to="/story" className="link-gold" style={{ color: "var(--accent)", fontWeight: 600, fontSize: 20 }}>
             اكتشف الرحلة ↓
           </Link>
+          <div
+            style={{
+              marginTop: 4,
+              display: "flex",
+              gap: 12,
+              alignItems: "center",
+              justifyContent: "center",
+              color: "rgba(255,255,255,0.72)",
+              fontSize: 11,
+              fontFamily: "var(--font-mono)",
+              letterSpacing: "0.08em",
+              flexWrap: "wrap",
+            }}
+          >
+            <span>★ 4.9 / 1,200 عميل</span>
+            <span style={{ width: 4, height: 4, background: "var(--accent)", borderRadius: 999, display: "inline-block" }} />
+            <span>توصيل خلال 7 أيام</span>
+            <span style={{ width: 4, height: 4, background: "rgba(255,255,255,0.18)", borderRadius: 999, display: "inline-block" }} />
+            <span style={{ color: "var(--accent)", fontWeight: 600 }}>موثّق في معروف</span>
+          </div>
         </div>
       </div>
 

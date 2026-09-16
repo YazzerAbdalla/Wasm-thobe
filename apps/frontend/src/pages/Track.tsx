@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { motion, AnimatePresence } from "motion/react";
 
 export default function Track() {
   const [mode, setMode] = useState<"code" | "phone">("code");
@@ -86,18 +87,33 @@ export default function Track() {
         {mode === "code" ? (
           <div style={{ display: "flex", gap: 10, marginTop: 14 }}>
             <input
+              id="track-code"
               value={code}
               onChange={(e) => setCode(e.target.value.toUpperCase())}
+              onKeyDown={(e) => e.key === "Enter" && doTrack()}
               placeholder="WASM-XXXXX"
+              aria-label="رقم الطلب"
+              aria-invalid={error ? true : undefined}
+              aria-errormessage={error ? "track-error" : undefined}
+              autoComplete="off"
               style={{ flex: 1, textAlign: "center", fontFamily: "var(--font-mono)", letterSpacing: "0.08em", ...inputStyle }}
             />
-            <button className="btn btn-primary" onClick={doTrack}>
+            <button className="btn btn-primary" onClick={doTrack} aria-label="تتبع برقم الطلب">
               تتبع
             </button>
           </div>
         ) : (
           <div style={{ display: "flex", gap: 10, marginTop: 14, direction: "ltr" as const }}>
-            <select value={cc} onChange={(e) => setCC(e.target.value)} style={{ flex: "0 0 130px", direction: "ltr" as const, textAlign: "left" as const, ...inputStyle }}>
+            <label htmlFor="track-cc" className="sr-only">
+              مفتاح الدولة
+            </label>
+            <select
+              id="track-cc"
+              value={cc}
+              onChange={(e) => setCC(e.target.value)}
+              aria-label="مفتاح الدولة"
+              style={{ flex: "0 0 130px", direction: "ltr" as const, textAlign: "left" as const, ...inputStyle }}
+            >
               <option value="+966">🇸🇦 +966</option>
               <option value="+971">🇦🇪 +971</option>
               <option value="+965">🇰🇼 +965</option>
@@ -109,19 +125,39 @@ export default function Track() {
               <option value="+961">🇱🇧 +961</option>
             </select>
             <input
+              id="track-phone"
               value={phone}
               onChange={(e) => setPhone(e.target.value.replace(/[^\d\s]/g, ""))}
+              onKeyDown={(e) => e.key === "Enter" && doTrack()}
               placeholder="5x xxx xxxx"
-              style={{ flex: 1, direction: "ltr" as const, textAlign: "left" as const, letterSpacing: "0.04em", ...inputStyle }}
+              aria-label="رقم الجوال"
+              aria-invalid={error ? true : undefined}
+              aria-errormessage={error ? "track-error" : undefined}
+              autoComplete="tel"
               inputMode="numeric"
+              style={{ flex: 1, direction: "ltr" as const, textAlign: "left" as const, letterSpacing: "0.04em", ...inputStyle }}
             />
-            <button className="btn btn-primary" onClick={doTrack}>
+            <button className="btn btn-primary" onClick={doTrack} aria-label="تتبع برقم الجوال">
               تتبع
             </button>
           </div>
         )}
 
-        {error && <div style={{ marginTop: 12, padding: "12px 14px", borderRadius: 10, fontSize: 13, background: "rgba(185,28,28,0.2)", border: "1px solid rgba(185,28,28,0.4)", color: "#FCA5A5" }}>{error}</div>}
+        <AnimatePresence>
+          {error && (
+            <motion.div
+              id="track-error"
+              role="alert"
+              aria-live="polite"
+              initial={{ opacity: 0, y: 6 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -6 }}
+              style={{ marginTop: 12, padding: "12px 14px", borderRadius: 10, fontSize: 13, background: "rgba(185,28,28,0.2)", border: "1px solid rgba(185,28,28,0.4)", color: "#FCA5A5" }}
+            >
+              {error}
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {showResult && (
           <div>

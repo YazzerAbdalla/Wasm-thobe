@@ -1,4 +1,5 @@
 import { useEffect, useCallback } from "react";
+import { motion, AnimatePresence } from "motion/react";
 import { useBuilderStore } from "./builderStore";
 import { api } from "../../services/api";
 import ThobePreview from "./ThobePreview";
@@ -173,7 +174,17 @@ export default function Builder() {
             </div>
           ) : (
             <>
-              <div style={{ opacity: 1, transition: "all .25s ease" }}>{renderStep(currentStep)}</div>
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={currentStep}
+                  initial={{ opacity: 0, x: 18 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -18 }}
+                  transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
+                >
+                  {renderStep(currentStep)}
+                </motion.div>
+              </AnimatePresence>
               {currentStep < totalSteps && (
                 <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 24 }}>
                   <button
