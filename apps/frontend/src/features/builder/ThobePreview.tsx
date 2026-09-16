@@ -4,10 +4,13 @@ import { useBuilderStore } from "./builderStore";
 
 const DARK_COLORS = new Set(["charcoal", "navy", "midnight", "c9", "c10", "c11", "c12"]);
 
+type Fit = "modern" | "najdi";
+
 export default function ThobePreview() {
   const { selectedColor, selectedFabric, selectedAccessories } = useBuilderStore();
   const total = useBuilderStore((s) => s.getTotalPrice());
   const [showTip, setShowTip] = useState(false);
+  const [fit, setFit] = useState<Fit>("modern");
 
   const hex = selectedColor?.hex_code ?? "#F5F0E8";
   const isDark =
@@ -26,12 +29,68 @@ export default function ThobePreview() {
   // Sadu diamond hint opacity — slightly higher for linen
   const saduOpacity = fabricId === "linen" ? 0.07 : fabricId === "wool" ? 0.045 : 0.035;
 
+  const thobeD = fit === "najdi" ? "M70 18 L130 18 L150 36 L150 92 L172 92 L172 280 L28 280 L28 92 L50 92 L50 36 Z" : "M70 18 L130 18 L148 36 L148 92 L168 92 L168 280 L32 280 L32 92 L52 92 L52 36 Z";
+
   return (
     <aside className="glass" style={{ position: "sticky", top: 96, padding: 22, display: "flex", flexDirection: "column", gap: 18 }}>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
         <span style={{ fontFamily: "var(--font-mono)", fontSize: 11, letterSpacing: "0.08em", color: "var(--muted)" }}>معاينة حيّة</span>
         <span style={{ fontSize: 11, color: "var(--accent)", background: "rgba(212,175,55,0.10)", border: "1px solid rgba(212,175,55,0.18)", padding: "4px 10px", borderRadius: 999 }}>تحديث فوري</span>
       </div>
+
+      {/* Fit toggle — Najdi vs Modern */}
+      <div
+        style={{
+          display: "flex",
+          gap: 6,
+          padding: 4,
+          borderRadius: 999,
+          background: "rgba(255,255,255,0.06)",
+          border: "1px solid rgba(255,255,255,0.06)",
+        }}
+        role="group"
+        aria-label="اختر القصّة"
+      >
+        <button
+          type="button"
+          onClick={() => setFit("modern")}
+          aria-pressed={fit === "modern"}
+          style={{
+            flex: 1,
+            padding: "7px 10px",
+            borderRadius: 999,
+            border: 0,
+            fontSize: 12,
+            fontWeight: 600,
+            background: fit === "modern" ? "var(--accent)" : "transparent",
+            color: fit === "modern" ? "#0B0B0B" : "var(--muted)",
+            transition: "all .2s ease",
+          }}
+        >
+          قصة عصرية
+        </button>
+        <button
+          type="button"
+          onClick={() => setFit("najdi")}
+          aria-pressed={fit === "najdi"}
+          style={{
+            flex: 1,
+            padding: "7px 10px",
+            borderRadius: 999,
+            border: 0,
+            fontSize: 12,
+            fontWeight: 600,
+            background: fit === "najdi" ? "var(--accent)" : "transparent",
+            color: fit === "najdi" ? "#0B0B0B" : "var(--muted)",
+            transition: "all .2s ease",
+          }}
+        >
+          قصة نجدية
+        </button>
+      </div>
+      <p style={{ fontSize: 11, color: "var(--muted)", margin: "-10px 0 0", textAlign: "center" }}>
+        {fit === "najdi" ? "أكمام أوسع وراحة تقليدية — لهيبة المجلس" : "قصة محددة وراحة يومية — لدوامك"}
+      </p>
 
       <div
         style={{
@@ -63,9 +122,9 @@ export default function ThobePreview() {
 
         <svg viewBox="0 0 200 300" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="Thobe preview" style={{ width: "64%", height: "auto", filter: "drop-shadow(0 18px 28px rgba(0,0,0,0.55))" }}>
           <motion.path
-            d="M70 18 L130 18 L148 36 L148 92 L168 92 L168 280 L32 280 L32 92 L52 92 L52 36 Z"
-            animate={{ fill: hex }}
-            transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
+            d={thobeD}
+            animate={{ fill: hex, d: thobeD }}
+            transition={{ duration: 0.42, ease: [0.22, 1, 0.36, 1] }}
             stroke={isDark ? "rgba(255,255,255,0.14)" : "rgba(0,0,0,0.06)"}
             strokeWidth={1.2}
           />
@@ -92,10 +151,10 @@ export default function ThobePreview() {
           <motion.rect x="122" y="96" width="22" height="16" rx="2.5" fill="none" stroke="rgba(0,0,0,0.14)" strokeWidth={1.1} initial={false} animate={{ opacity: showPocket ? 1 : 0 }} transition={{ duration: 0.32 }} />
           {/* cuff */}
           <motion.g initial={false} animate={{ opacity: showCollar ? 1 : 0 }} transition={{ duration: 0.32 }}>
-            <rect x="32" y="266" width="136" height="6" rx="3" fill="rgba(212,175,55,0.22)" />
+            <motion.rect x={fit === "najdi" ? 28 : 32} y="266" width={fit === "najdi" ? 144 : 136} height="6" rx="3" fill="rgba(212,175,55,0.22)" animate={{ x: fit === "najdi" ? 28 : 32, width: fit === "najdi" ? 144 : 136 }} transition={{ duration: 0.32 }} />
           </motion.g>
-          <path d="M52 92 L32 92 L32 280 L52 280" fill="none" stroke="rgba(0,0,0,0.04)" />
-          <path d="M148 92 L168 92 L168 280 L148 280" fill="none" stroke="rgba(0,0,0,0.04)" />
+          <motion.path d={fit === "najdi" ? "M50 92 L28 92 L28 280 L50 280" : "M52 92 L32 92 L32 280 L52 280"} fill="none" stroke="rgba(0,0,0,0.04)" animate={{ d: fit === "najdi" ? "M50 92 L28 92 L28 280 L50 280" : "M52 92 L32 92 L32 280 L52 280"} } transition={{ duration: 0.32 }} />
+          <motion.path d={fit === "najdi" ? "M150 92 L172 92 L172 280 L150 280" : "M148 92 L168 92 L168 280 L148 280"} fill="none" stroke="rgba(0,0,0,0.04)" animate={{ d: fit === "najdi" ? "M150 92 L172 92 L172 280 L150 280" : "M148 92 L168 92 L168 280 L148 280"} } transition={{ duration: 0.32 }} />
         </svg>
 
         <motion.div

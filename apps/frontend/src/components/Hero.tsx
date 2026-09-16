@@ -1,11 +1,64 @@
+import { useRef } from "react";
 import { Link } from "react-router-dom";
+import { motion, useScroll, useTransform, useReducedMotion } from "motion/react";
 import { useBooking } from "../hooks/useBooking";
+
+function ArrowDraw() {
+  return (
+    <motion.svg
+      width="200"
+      height="42"
+      viewBox="0 0 200 42"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      aria-hidden="true"
+      initial="hidden"
+      whileInView="visible"
+      viewport={{ once: true, amount: 0.6 }}
+      style={{ opacity: 0.9, marginBlock: 4, overflow: "visible" }}
+    >
+      {/* flowing curve with arrowhead */}
+      <motion.path
+        d="M8 28 C 58 6, 122 6, 164 26 L 154 16 M164 26 L 152 34"
+        stroke="var(--accent)"
+        strokeWidth="1.2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        variants={{
+          hidden: { pathLength: 0, opacity: 0 },
+          visible: {
+            pathLength: 1,
+            opacity: 0.9,
+            transition: { duration: 1.1, ease: [0.22, 1, 0.36, 1], delay: 0.9 },
+          },
+        }}
+      />
+      {/* subtle second stroke for depth */}
+      <motion.path
+        d="M8 30 C 58 10, 122 10, 162 28"
+        stroke="white"
+        strokeWidth="0.5"
+        opacity="0.18"
+        strokeLinecap="round"
+        variants={{
+          hidden: { pathLength: 0 },
+          visible: { pathLength: 1, transition: { duration: 1.1, ease: [0.22, 1, 0.36, 1], delay: 1 } },
+        }}
+      />
+    </motion.svg>
+  );
+}
 
 export default function Hero() {
   const { openBooking } = useBooking();
+  const heroRef = useRef<HTMLElement>(null);
+  const { scrollYProgress } = useScroll({ target: heroRef, offset: ["start start", "end start"] });
+  const shouldReduce = useReducedMotion();
+  // Parallax 0 → 56px max, disabled if reduced motion
+  const imgY = useTransform(scrollYProgress, [0, 1], [0, shouldReduce ? 0 : 56]);
 
   return (
-    <section className="hero-wrap" style={{ paddingTop: "var(--header-h)", minHeight: "92vh", position: "relative", overflow: "hidden", display: "flex" } as React.CSSProperties}>
+    <section ref={heroRef} className="hero-wrap" style={{ paddingTop: "var(--header-h)", minHeight: "92vh", position: "relative", overflow: "hidden", display: "flex" } as React.CSSProperties}>
       {/* Mobile */}
       <div
         className="hero-mobile"
@@ -40,7 +93,7 @@ export default function Hero() {
               احجز موعد قياس
             </button>
           </div>
-          <img src="/images/arrow-icon.png" alt="" loading="lazy" decoding="async" style={{ width: 200, opacity: 0.9, marginBlock: 4 }} />
+          <ArrowDraw />
           <Link to="/story" className="link-gold" style={{ color: "var(--accent)", fontWeight: 600, fontSize: 20 }}>
             اكتشف الرحلة ↓
           </Link>
@@ -105,7 +158,7 @@ export default function Hero() {
               احجز موعد قياس
             </button>
           </div>
-          <img src="/images/arrow-icon.png" alt="" loading="lazy" decoding="async" style={{ width: 200, opacity: 0.9, marginBlock: 4 }} />
+          <ArrowDraw />
           <Link to="/story" style={{ color: "var(--accent)", fontWeight: 600, fontSize: 20 }}>
             اكتشف الرحلة ↓
           </Link>
@@ -126,14 +179,17 @@ export default function Hero() {
             <span>توصيل خلال 7 أيام</span>
           </div>
         </div>
-        <div
-          style={{
-            flex: 1,
-            position: "relative",
-            overflow: "hidden",
-            background: "#0f0f0e",
-            animation: "heroImageIn 1.02s cubic-bezier(.22,1,.36,1) .08s both",
-          } as React.CSSProperties}
+        <motion.div
+          style={
+            {
+              flex: 1,
+              position: "relative",
+              overflow: "hidden",
+              background: "#0f0f0e",
+              y: imgY,
+              animation: "heroImageIn 1.02s cubic-bezier(.22,1,.36,1) .08s both",
+            } as unknown as React.CSSProperties
+          }
         >
           <img
             src="/images/Hero.png"
@@ -152,7 +208,7 @@ export default function Hero() {
               background: "linear-gradient(to right, rgba(0,0,0,1) 0%, rgba(0,0,0,0.7) 18%, transparent 55%)",
             }}
           />
-        </div>
+        </motion.div>
       </div>
 
       <style>{`

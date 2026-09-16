@@ -8,8 +8,12 @@ export default function ReviewStep() {
   const { selectedColor, selectedFabric, selectedAccessories, basePrice, getTotalPrice, customizationId, guestName, guestCC, guestPhone, setGuestName, setGuestCC, setGuestPhone } = useBuilderStore();
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [giftWrap, setGiftWrap] = useState(false);
+  const [giftCard, setGiftCard] = useState(false);
+  const [giftText, setGiftText] = useState("");
   const navigate = useNavigate();
-  const total = getTotalPrice();
+  const baseTotal = getTotalPrice();
+  const total = baseTotal + (giftWrap ? 25 : 0);
 
   const confirm = async () => {
     setError(null);
@@ -78,9 +82,143 @@ export default function ReviewStep() {
         </div>
       </div>
 
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "12px 16px", background: "rgba(212,175,55,0.08)", border: "1px solid rgba(212,175,55,0.18)", borderRadius: 10, marginBottom: 18 }}>
-        <span style={{ color: "var(--muted)", fontSize: 14 }}>الإجمالي</span>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "12px 16px", background: "rgba(212,175,55,0.08)", border: "1px solid rgba(212,175,55,0.18)", borderRadius: 10, marginBottom: 14 }}>
+        <span style={{ color: "var(--muted)", fontSize: 14 }}>الإجمالي{giftWrap ? " (شامل التغليف)" : ""}</span>
         <strong style={{ color: "var(--accent)", fontFamily: "var(--font-mono)" }}>SAR {total}</strong>
+      </div>
+
+      {/* Gifting — silk wrap + handwritten card */}
+      <div
+        style={{
+          padding: 14,
+          borderRadius: 14,
+          background: "rgba(255,255,255,0.03)",
+          border: "1px solid rgba(255,255,255,0.08)",
+          marginBottom: 14,
+          display: "flex",
+          flexDirection: "column",
+          gap: 12,
+        }}
+      >
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
+          <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
+            <span
+              style={{
+                width: 32,
+                height: 32,
+                borderRadius: 8,
+                display: "grid",
+                placeItems: "center",
+                background: giftWrap ? "var(--accent)" : "rgba(255,255,255,0.06)",
+                border: `1px solid ${giftWrap ? "var(--accent)" : "rgba(255,255,255,0.08)"}`,
+                color: giftWrap ? "#0B0B0B" : "var(--muted)",
+                fontSize: 14,
+              }}
+            >
+              ✦
+            </span>
+            <div>
+              <div style={{ fontSize: 13, fontWeight: 600, color: "#fff" }}>تغليف هدايا حريري + كيس قماشي</div>
+              <div style={{ fontSize: 11, color: "var(--muted)" }}>إضافة 25 ر.س — تغليف فاخر جاهز للإهداء (العيد / تخرج)</div>
+            </div>
+          </div>
+          <button
+            type="button"
+            role="switch"
+            aria-checked={giftWrap}
+            onClick={() => setGiftWrap((v) => !v)}
+            style={{
+              width: 44,
+              height: 26,
+              borderRadius: 999,
+              border: 0,
+              padding: 3,
+              background: giftWrap ? "var(--accent)" : "rgba(255,255,255,0.14)",
+              display: "flex",
+              justifyContent: giftWrap ? "flex-start" : "flex-end",
+              transition: "background .22s ease",
+              cursor: "pointer",
+            }}
+          >
+            <span style={{ width: 20, height: 20, borderRadius: 999, background: "#fff", display: "block", boxShadow: "0 2px 8px rgba(0,0,0,0.22)" }} />
+          </button>
+        </div>
+
+        <div style={{ height: 1, background: "rgba(255,255,255,0.06)" }} />
+
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
+          <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
+            <span
+              style={{
+                width: 32,
+                height: 32,
+                borderRadius: 8,
+                display: "grid",
+                placeItems: "center",
+                background: giftCard ? "var(--accent)" : "rgba(255,255,255,0.06)",
+                border: `1px solid ${giftCard ? "var(--accent)" : "rgba(255,255,255,0.08)"}`,
+                color: giftCard ? "#0B0B0B" : "var(--muted)",
+                fontSize: 12,
+              }}
+            >
+              ✎
+            </span>
+            <div>
+              <div style={{ fontSize: 13, fontWeight: 600, color: "#fff" }}>بطاقة إهداء بخط عربي — مجاناً</div>
+              <div style={{ fontSize: 11, color: "var(--muted)" }}>نكتب اسم المُهدى له بخط يدوي على بطاقة وسم</div>
+            </div>
+          </div>
+          <button
+            type="button"
+            role="switch"
+            aria-checked={giftCard}
+            onClick={() => setGiftCard((v) => !v)}
+            style={{
+              width: 44,
+              height: 26,
+              borderRadius: 999,
+              border: 0,
+              padding: 3,
+              background: giftCard ? "var(--accent)" : "rgba(255,255,255,0.14)",
+              display: "flex",
+              justifyContent: giftCard ? "flex-start" : "flex-end",
+              transition: "background .22s ease",
+              cursor: "pointer",
+            }}
+          >
+            <span style={{ width: 20, height: 20, borderRadius: 999, background: "#fff", display: "block", boxShadow: "0 2px 8px rgba(0,0,0,0.22)" }} />
+          </button>
+        </div>
+
+        <AnimatePresence>
+          {giftCard && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              exit={{ opacity: 0, height: 0 }}
+              style={{ overflow: "hidden" }}
+            >
+              <input
+                value={giftText}
+                onChange={(e) => setGiftText(e.target.value.slice(0, 40))}
+                placeholder="مثال: إلى أخي فيصل — بكل فخر"
+                maxLength={40}
+                style={{
+                  width: "100%",
+                  marginTop: 8,
+                  padding: "12px 14px",
+                  borderRadius: 10,
+                  background: "rgba(255,255,255,0.08)",
+                  border: "1px solid rgba(255,255,255,0.10)",
+                  color: "#fff",
+                  fontSize: 13,
+                  fontFamily: "var(--font-display)",
+                }}
+              />
+              <div style={{ fontSize: 11, color: "var(--muted)", marginTop: 6, textAlign: "left" as const }}>{giftText.length}/40</div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
 
       <div style={{ padding: 18, borderRadius: 14, background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.08)", marginBottom: 14 }}>

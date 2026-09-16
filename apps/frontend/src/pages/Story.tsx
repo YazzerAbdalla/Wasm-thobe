@@ -1,4 +1,18 @@
+import { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "motion/react";
+
+const QUOTES = [
+  { name: "أبو عبدالله — الرياض", text: "الثوب وصل كأنه مفصل عليّ من 20 سنة. أبو فيصل كتب اسمه على البطاقة — احترام.", time: "11:42 ص", stars: 5 },
+  { name: "فيصل المطيري — جدة", text: "طلبته هدية لوالدي، التغليف الحريري لحاله هدية. والدّي لبسه في العيد.", time: "9:18 م", stars: 5 },
+  { name: "محمد القحطاني — الشرقية", text: "الشفافية أهم شي. عرفت سعر القماش والتطريز قبل ما أدفع — ما في مفاجآت.", time: "4:05 م", stars: 5 },
+];
+
 export default function Story() {
+  const [idx, setIdx] = useState(0);
+  useEffect(() => {
+    const t = setInterval(() => setIdx((i) => (i + 1) % QUOTES.length), 4200);
+    return () => clearInterval(t);
+  }, []);
   return (
     <div className="container-atelier" style={{ paddingBottom: 64 }}>
       <div style={{ textAlign: "center", padding: "56px 0 32px", maxWidth: 760, margin: "0 auto" }}>
@@ -102,6 +116,87 @@ export default function Story() {
               <div style={{ fontFamily: "var(--font-display)", fontSize: 12, color: "#fff" }}>حرفيّ واحد · ثوب واحد · توقيع واحد</div>
               <div style={{ fontSize: 11, color: "rgba(255,255,255,0.66)" }}>كل ثوب يوقّعه صانعه</div>
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* WhatsApp quote carousel — peer trust */}
+      <section style={{ maxWidth: 980, margin: "36px auto 0", padding: "0 0 8px" }}>
+        <div style={{ textAlign: "center", marginBottom: 16 }}>
+          <p className="eyebrow" style={{ fontSize: 10 }}>آراء العملاء</p>
+          <h3 style={{ margin: "6px 0 0", fontSize: 18, color: "#fff" }}>كلامهم — ليس كلامنا</h3>
+          <p style={{ margin: "6px 0 0", fontSize: 13, color: "var(--muted)" }}>600 مراجعة موثقة · واتساب حقيقي، ثياب حقيقية</p>
+        </div>
+
+        <div
+          className="glass"
+          style={{
+            padding: 20,
+            minHeight: 148,
+            position: "relative",
+            overflow: "hidden",
+            background: "rgba(255,255,255,0.03)",
+          }}
+        >
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={idx}
+              initial={{ opacity: 0, x: 14 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -14 }}
+              transition={{ duration: 0.34, ease: [0.22, 1, 0.36, 1] }}
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                gap: 10,
+                background: "rgba(255,255,255,0.04)",
+                border: "1px solid rgba(255,255,255,0.06)",
+                borderRadius: 14,
+                padding: 16,
+              }}
+            >
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                  <span
+                    style={{
+                      width: 30,
+                      height: 30,
+                      borderRadius: 999,
+                      background: "#25D366",
+                      color: "#fff",
+                      display: "grid",
+                      placeItems: "center",
+                      fontSize: 12,
+                    }}
+                  >
+                    ✆
+                  </span>
+                  <strong style={{ fontSize: 13 }}>{QUOTES[idx].name}</strong>
+                  <span style={{ fontSize: 11, color: "var(--muted)", fontFamily: "var(--font-mono)" }}>{QUOTES[idx].time} ✓✓</span>
+                </div>
+                <span style={{ color: "var(--accent)", fontSize: 11, letterSpacing: "0.08em" }}>{"★".repeat(QUOTES[idx].stars)}</span>
+              </div>
+              <p style={{ margin: 0, fontSize: 14, color: "rgba(255,255,255,0.92)", lineHeight: 1.8 }}>{QUOTES[idx].text}</p>
+            </motion.div>
+          </AnimatePresence>
+
+          <div style={{ display: "flex", gap: 8, justifyContent: "center", marginTop: 14 }}>
+            {QUOTES.map((_, i) => (
+              <button
+                key={i}
+                onClick={() => setIdx(i)}
+                aria-label={`اقتباس ${i + 1}`}
+                style={{
+                  width: i === idx ? 18 : 8,
+                  height: 8,
+                  borderRadius: 999,
+                  border: 0,
+                  background: i === idx ? "var(--accent)" : "rgba(255,255,255,0.18)",
+                  transition: "all .22s ease",
+                  cursor: "pointer",
+                }}
+              />
+            ))}
           </div>
         </div>
       </section>

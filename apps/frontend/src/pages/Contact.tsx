@@ -74,17 +74,47 @@ export default function Contact() {
           <div
             className="glass"
             style={{
-              padding: 16,
-              minHeight: 180,
-              display: "grid",
-              placeItems: "center",
-              background: "radial-gradient(300px 180px at 50% 30%, rgba(212,175,55,0.12), transparent 60%), linear-gradient(180deg, #1D1D1B, #0B0B0B)",
+              padding: 0,
+              minHeight: 220,
+              overflow: "hidden",
+              borderRadius: 16,
+              position: "relative",
             }}
           >
-            <div style={{ textAlign: "center" }}>
-              <div style={{ fontSize: 12, color: "var(--muted)", fontFamily: "var(--font-mono)" }}>MAP · RIYADH ATELIER</div>
-              <div style={{ marginTop: 8, fontSize: 13, color: "#fff" }}>خريطة تفاعلية قريباً — حالياً بالموعد فقط</div>
-            </div>
+            <iframe
+              title="خريطة وسم — السليمانية، الرياض"
+              src="https://www.google.com/maps?q=%D8%AD%D9%8A%20%D8%A7%D9%84%D8%B3%D9%84%D9%8A%D9%85%D8%A7%D9%86%D9%8A%D8%A9%20%D8%A7%D9%84%D8%B1%D9%8A%D8%A7%D8%B6&z=14&output=embed"
+              width="100%"
+              height="220"
+              style={{ border: 0, display: "block", filter: "grayscale(0.15) contrast(1.02)" }}
+              loading="lazy"
+              referrerPolicy="no-referrer-when-downgrade"
+              allowFullScreen
+            />
+            <a
+              href="https://www.google.com/maps/search/%D8%AD%D9%8A+%D8%A7%D9%84%D8%B3%D9%84%D9%8A%D9%85%D8%A7%D9%86%D9%8A%D8%A9+%D8%A7%D9%84%D8%B1%D9%8A%D8%A7%D8%B6"
+              target="_blank"
+              rel="noreferrer"
+              style={{
+                position: "absolute",
+                bottom: 12,
+                right: 12,
+                background: "rgba(0,0,0,0.72)",
+                backdropFilter: "blur(8px)",
+                border: "1px solid rgba(255,255,255,0.14)",
+                color: "#fff",
+                fontSize: 12,
+                fontWeight: 600,
+                padding: "8px 12px",
+                borderRadius: 999,
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 6,
+              }}
+            >
+              <span style={{ width: 6, height: 6, borderRadius: 999, background: "var(--accent)", display: "inline-block" }} />
+              افتح في خرائط Google
+            </a>
           </div>
         </div>
       </div>
