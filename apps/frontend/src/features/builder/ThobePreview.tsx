@@ -1,189 +1,113 @@
-/**
- * @file ThobePreview.tsx
- * @description Live SVG preview of the thobe that updates instantly
- *              via CSS custom properties when the user changes color or fabric.
- *              No server calls — all rendering is pure CSS-driven.
- */
+import { useBuilderStore } from "./builderStore";
 
-import { useEffect, useRef } from 'react';
-import { useBuilderStore } from './builderStore';
+const DARK_COLORS = new Set(["charcoal", "navy", "midnight", "c9", "c10", "c11", "c12"]);
 
-/**
- * ThobePreview component.
- * Renders an inline SVG of a traditional Saudi thobe.
- * Updates color and fabric texture in real-time using CSS custom properties.
- */
 export default function ThobePreview() {
-  const { selectedColor, selectedFabric } = useBuilderStore();
-  const svgRef = useRef<SVGSVGElement>(null);
+  const { selectedColor, selectedFabric, selectedAccessories } = useBuilderStore();
+  const total = useBuilderStore((s) => s.getTotalPrice());
 
-  // Update CSS custom property on color change — instant, no re-render needed
-  useEffect(() => {
-    if (svgRef.current) {
-      svgRef.current.style.setProperty(
-        '--thobe-color',
-        selectedColor?.hex_code ?? '#FFFFFF'
-      );
-    }
-  }, [selectedColor]);
+  const hex = selectedColor?.hex_code ?? "#F5F0E8";
+  const isDark =
+    selectedColor ? (DARK_COLORS.has(selectedColor.id) || ["#2B2B2B", "#1A2332", "#0A0A0B", "#1a1a1a", "#000080", "#36454F"].includes(hex.toUpperCase())) : false;
 
-  // Build the texture class based on selected fabric
-  const textureClass = selectedFabric?.texture_class ?? '';
+  const has = (id: string) => selectedAccessories.some((a) => a.id === id || a.type === id);
+  // ref ids: collar/cuff/emb/pocket — map legacy types if needed
+  const showCollar = has("collar") || has("decoration");
+  const showButtons = has("cuff") || has("cufflinks");
+  const showPocket = has("pocket");
+  const showEmb = has("emb") || has("personalization");
+  const fabricId = selectedFabric?.id ?? "cotton";
+  const overlayOpacity = fabricId === "linen" || selectedFabric?.texture_class === "fabric-linen" ? 0.22 : fabricId === "wool" || selectedFabric?.texture_class === "fabric-wool" ? 0.08 : 0.12;
+
+  const addonNames = selectedAccessories.map((a) => a.name).join(" · ");
 
   return (
-    <div className="flex flex-col items-center gap-4">
-      <div className="relative">
-        {/* Glow effect behind the thobe */}
-        <div
-          className="absolute inset-0 rounded-full blur-3xl opacity-20 transition-all duration-700"
-          style={{ backgroundColor: selectedColor?.hex_code ?? '#FFFFFF' }}
-        />
-        <svg
-          ref={svgRef}
-          viewBox="0 0 200 320"
-          xmlns="http://www.w3.org/2000/svg"
-          className="w-48 h-auto relative z-10 drop-shadow-xl"
-          style={{ '--thobe-color': selectedColor?.hex_code ?? '#FFFFFF' } as React.CSSProperties}
-        >
-          {/* Fabric texture definitions */}
-          <defs>
-            {/* Linen texture: fine crosshatch */}
-            <pattern id="linen-pattern" patternUnits="userSpaceOnUse" width="4" height="4">
-              <path d="M0,0 L4,4 M4,0 L0,4" stroke="rgba(0,0,0,0.06)" strokeWidth="0.5" />
-            </pattern>
-            {/* Wool texture: tighter dots */}
-            <pattern id="wool-pattern" patternUnits="userSpaceOnUse" width="5" height="5">
-              <circle cx="2.5" cy="2.5" r="0.8" fill="rgba(0,0,0,0.08)" />
-            </pattern>
-            {/* Cotton texture: very subtle lines */}
-            <pattern id="cotton-pattern" patternUnits="userSpaceOnUse" width="3" height="3">
-              <line x1="0" y1="1.5" x2="3" y2="1.5" stroke="rgba(0,0,0,0.05)" strokeWidth="0.5" />
-            </pattern>
-            {/* Silk texture: diagonal shimmer */}
-            <pattern id="silk-pattern" patternUnits="userSpaceOnUse" width="6" height="6">
-              <path d="M0,6 L6,0" stroke="rgba(255,255,255,0.15)" strokeWidth="1" />
-            </pattern>
-          </defs>
+    <aside className="glass" style={{ position: "sticky", top: 96, padding: 22, display: "flex", flexDirection: "column", gap: 18 }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+        <span style={{ fontFamily: "var(--font-mono)", fontSize: 11, letterSpacing: "0.08em", color: "var(--muted)" }}>معاينة حيّة</span>
+        <span style={{ fontSize: 11, color: "var(--accent)", background: "rgba(212,175,55,0.10)", border: "1px solid rgba(212,175,55,0.18)", padding: "4px 10px", borderRadius: 999 }}>تحديث فوري</span>
+      </div>
 
-          {/* === Body === */}
-          {/* Main body fill with CSS custom property */}
+      <div
+        style={{
+          background: "radial-gradient(500px 300px at 50% 20%, rgba(212,175,55,0.10), transparent 70%), linear-gradient(180deg, #1A1A18, #0E0E0D)",
+          borderRadius: 16,
+          border: "1px solid rgba(255,255,255,0.06)",
+          aspectRatio: "3 / 4",
+          display: "grid",
+          placeItems: "center",
+          overflow: "hidden",
+          position: "relative",
+        }}
+      >
+        <svg viewBox="0 0 200 300" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="Thobe preview" style={{ width: "64%", height: "auto", filter: "drop-shadow(0 18px 28px rgba(0,0,0,0.55))" }}>
           <path
-            className={`thobe-body ${textureClass}`}
-            d="M 40 80 L 20 280 L 180 280 L 160 80 L 140 70 L 100 90 L 60 70 Z"
-            fill="var(--thobe-color, #FFFFFF)"
-            stroke="rgba(0,0,0,0.1)"
-            strokeWidth="1"
+            d="M70 18 L130 18 L148 36 L148 92 L168 92 L168 280 L32 280 L32 92 L52 92 L52 36 Z"
+            fill={hex}
+            stroke={isDark ? "rgba(255,255,255,0.14)" : "rgba(0,0,0,0.06)"}
+            strokeWidth={1.2}
           />
-
-          {/* Fabric texture overlay — mapped by class */}
-          {textureClass === 'fabric-linen' && (
-            <path
-              d="M 40 80 L 20 280 L 180 280 L 160 80 L 140 70 L 100 90 L 60 70 Z"
-              fill="url(#linen-pattern)"
-            />
-          )}
-          {textureClass === 'fabric-wool' && (
-            <path
-              d="M 40 80 L 20 280 L 180 280 L 160 80 L 140 70 L 100 90 L 60 70 Z"
-              fill="url(#wool-pattern)"
-            />
-          )}
-          {textureClass === 'fabric-cotton' && (
-            <path
-              d="M 40 80 L 20 280 L 180 280 L 160 80 L 140 70 L 100 90 L 60 70 Z"
-              fill="url(#cotton-pattern)"
-            />
-          )}
-          {textureClass === 'fabric-silk' && (
-            <path
-              d="M 40 80 L 20 280 L 180 280 L 160 80 L 140 70 L 100 90 L 60 70 Z"
-              fill="url(#silk-pattern)"
-            />
-          )}
-
-          {/* === Collar === */}
+          {/* collar */}
           <path
-            d="M 85 90 Q 100 120 115 90"
+            d="M86 18 L100 38 L114 18"
             fill="none"
-            stroke="rgba(0,0,0,0.15)"
-            strokeWidth="1.5"
+            stroke={showCollar ? "#D4AF37" : "rgba(0,0,0,0.18)"}
+            strokeWidth={1.4}
+            strokeLinejoin="round"
+            opacity={showCollar ? 1 : 0}
           />
-
-          {/* === Left Sleeve === */}
-          <path
-            className={`thobe-sleeve ${textureClass}`}
-            d="M 40 80 L 60 70 L 65 110 L 10 130 L 5 110 Z"
-            fill="var(--thobe-color, #FFFFFF)"
-            stroke="rgba(0,0,0,0.1)"
-            strokeWidth="1"
-          />
-          {textureClass === 'fabric-linen' && (
-            <path d="M 40 80 L 60 70 L 65 110 L 10 130 L 5 110 Z" fill="url(#linen-pattern)" />
-          )}
-          {textureClass === 'fabric-wool' && (
-            <path d="M 40 80 L 60 70 L 65 110 L 10 130 L 5 110 Z" fill="url(#wool-pattern)" />
-          )}
-          {textureClass === 'fabric-cotton' && (
-            <path d="M 40 80 L 60 70 L 65 110 L 10 130 L 5 110 Z" fill="url(#cotton-pattern)" />
-          )}
-          {textureClass === 'fabric-silk' && (
-            <path d="M 40 80 L 60 70 L 65 110 L 10 130 L 5 110 Z" fill="url(#silk-pattern)" />
-          )}
-
-          {/* === Right Sleeve === */}
-          <path
-            className={`thobe-sleeve ${textureClass}`}
-            d="M 140 70 L 160 80 L 195 110 L 190 130 L 135 110 Z"
-            fill="var(--thobe-color, #FFFFFF)"
-            stroke="rgba(0,0,0,0.1)"
-            strokeWidth="1"
-          />
-          {textureClass === 'fabric-linen' && (
-            <path d="M 140 70 L 160 80 L 195 110 L 190 130 L 135 110 Z" fill="url(#linen-pattern)" />
-          )}
-          {textureClass === 'fabric-wool' && (
-            <path d="M 140 70 L 160 80 L 195 110 L 190 130 L 135 110 Z" fill="url(#wool-pattern)" />
-          )}
-          {textureClass === 'fabric-cotton' && (
-            <path d="M 140 70 L 160 80 L 195 110 L 190 130 L 135 110 Z" fill="url(#cotton-pattern)" />
-          )}
-          {textureClass === 'fabric-silk' && (
-            <path d="M 140 70 L 160 80 L 195 110 L 190 130 L 135 110 Z" fill="url(#silk-pattern)" />
-          )}
-
-          {/* === Head (simplified) === */}
-          <circle cx="100" cy="48" r="28" fill="#F5DEB3" stroke="rgba(0,0,0,0.1)" strokeWidth="1" />
-
-          {/* Ghutra (headscarf) */}
-          <path
-            d="M 72 35 Q 100 10 128 35 L 130 48 Q 100 60 70 48 Z"
-            fill="#FFFFFF"
-            stroke="rgba(0,0,0,0.08)"
-            strokeWidth="0.8"
-          />
-          {/* Iqal (black rope on ghutra) */}
-          <ellipse cx="100" cy="35" rx="18" ry="5" fill="none" stroke="#222" strokeWidth="2.5" />
+          {/* placket */}
+          <rect x="96" y="38" width="8" height="78" rx="3" fill="rgba(0,0,0,0.06)" opacity={showButtons || showEmb ? 1 : 0} />
+          {/* buttons */}
+          <g opacity={showButtons ? 1 : 0}>
+            <circle cx="100" cy="58" r={3.2} fill="#D4AF37" stroke="rgba(0,0,0,0.12)" />
+            <circle cx="100" cy="78" r={3.2} fill="#D4AF37" />
+            <circle cx="100" cy="98" r={3.2} fill="#D4AF37" />
+          </g>
+          {/* pocket */}
+          <rect x="122" y="96" width="22" height="16" rx="2.5" fill="none" stroke="rgba(0,0,0,0.14)" strokeWidth={1.1} opacity={showPocket ? 1 : 0} />
+          {/* cuff */}
+          <g opacity={showCollar ? 1 : 0}>
+            <rect x="32" y="266" width="136" height="6" rx="3" fill="rgba(212,175,55,0.22)" />
+          </g>
+          <path d="M52 92 L32 92 L32 280 L52 280" fill="none" stroke="rgba(0,0,0,0.04)" />
+          <path d="M148 92 L168 92 L168 280 L148 280" fill="none" stroke="rgba(0,0,0,0.04)" />
         </svg>
+        <div
+          style={{
+            position: "absolute",
+            inset: 0,
+            opacity: overlayOpacity,
+            pointerEvents: "none",
+            mixBlendMode: "multiply" as const,
+            backgroundImage: "repeating-linear-gradient(-8deg, rgba(0,0,0,0.06) 0 1px, transparent 1px 6px)",
+          }}
+        />
       </div>
 
-      {/* Color / Fabric label */}
-      <div className="text-center text-sm space-y-1">
-        {selectedColor && (
-          <p className="flex items-center justify-center gap-2" style={{ color: 'var(--color-muted)' }}>
-            <span
-              className="inline-block w-3 h-3 rounded-full border border-white/20"
-              style={{ backgroundColor: selectedColor.hex_code }}
-            />
-            <span style={{ color: 'white' }}>{selectedColor.name}</span>
-          </p>
-        )}
-        {selectedFabric && (
-          <p style={{ color: 'var(--color-muted)' }}>{selectedFabric.name}</p>
-        )}
-        {!selectedColor && !selectedFabric && (
-          <p style={{ color: 'var(--color-muted)', fontSize: 'var(--text-xs)', fontStyle: 'italic' }}>اختر لوناً لرؤية ثوبك</p>
-        )}
+      <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+        <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13 }}>
+          <span style={{ color: "var(--muted)" }}>اللون</span>
+          <strong>{selectedColor?.name ?? "أبيض لؤلؤي"}</strong>
+        </div>
+        <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13 }}>
+          <span style={{ color: "var(--muted)" }}>القماش</span>
+          <strong>{selectedFabric?.name ?? "قطن مصري فاخر"}</strong>
+        </div>
+        <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13 }}>
+          <span style={{ color: "var(--muted)" }}>الإضافات</span>
+          <strong style={{ textAlign: "left", maxWidth: "60%", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const }}>
+            {addonNames || "— بدون إضافات"}
+          </strong>
+        </div>
       </div>
-    </div>
+
+      <hr className="rule" />
+      <div className="price-row" style={{ background: "rgba(212,175,55,0.08)", borderColor: "rgba(212,175,55,0.18)", display: "flex", justifyContent: "space-between", alignItems: "center", padding: "12px 16px", border: "1px solid", borderRadius: 10 }}>
+        <span style={{ fontSize: 13, color: "var(--muted)" }}>الإجمالي</span>
+        <strong style={{ color: "var(--accent)", fontSize: 18, fontFamily: "var(--font-mono)" }}>SAR {total}</strong>
+      </div>
+      <p style={{ fontSize: 11, color: "var(--muted)", textAlign: "center", margin: 0 }}>السعر يشمل التفصيل والتغليف الحريري</p>
+    </aside>
   );
 }

@@ -1,106 +1,82 @@
-/**
- * @file ColorStep.tsx
- * @description الخطوة الأولى — اختيار اللون. وضع ليلي عربي.
- */
+import { useBuilderStore } from "../builderStore";
 
-import { motion } from 'motion/react';
-import { Check } from 'lucide-react';
-import { useBuilderStore, type IColor } from '../builderStore';
-
-/**
- * مكوّن اختيار اللون.
- * يعرض شبكة من نماذج الألوان. الاختيار يُحدّث المعاينة فوراً.
- */
 export default function ColorStep() {
   const { colors, selectedColor, selectColor } = useBuilderStore();
 
   return (
-    <div className="space-y-6" dir="rtl">
-      <div>
-        <h2 className="text-2xl font-heading" style={{ color: 'white' }}>
-          اختر لون ثوبك
-        </h2>
-        <p style={{ color: 'var(--color-muted)', fontSize: 'var(--text-sm)', marginTop: '4px' }}>
-          حدّد اللون الأساسي — المعاينة تتحدث فوراً
-        </p>
-      </div>
-
-      <div className="grid grid-cols-4 sm:grid-cols-6 gap-4">
-        {colors.map((color: IColor) => {
-          const isSelected = selectedColor?.id === color.id;
+    <div>
+      <h3 style={{ fontSize: 20, margin: "0 0 6px" }}>اختر لون ثوبك</h3>
+      <p style={{ color: "var(--muted)", fontSize: 13, margin: "0 0 20px" }}>ستة ألوان مختارة بعناية — من اللؤلؤي الهادئ إلى الليلي العميق.</p>
+      <div
+        style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 18 } as React.CSSProperties}
+        className="color-grid"
+      >
+        {colors.map((c) => {
+          const sel = selectedColor?.id === c.id;
+          const priceLabel = (c.price ?? 0) ? ` · +${c.price}` : "";
           return (
-            <motion.button
-              key={color.id}
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={() => selectColor(color)}
-              className="flex flex-col items-center gap-2 focus:outline-none group"
-              title={color.name}
+            <div
+              key={c.id}
+              onClick={() => selectColor(c)}
+              className={sel ? "color-opt selected" : "color-opt"}
+              data-id={c.id}
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                gap: 8,
+                cursor: "pointer",
+                position: "relative",
+              } as React.CSSProperties}
             >
-              {/* دائرة اللون */}
               <div
-                className="w-12 h-12 rounded-full flex items-center justify-center transition-all duration-200"
+                className="color-circle"
                 style={{
-                  backgroundColor: color.hex_code,
-                  border: isSelected
-                    ? '3px solid var(--color-gold)'
-                    : '3px solid transparent',
-                  boxShadow: isSelected
-                    ? '0 0 12px rgba(212,175,55,0.4)'
-                    : 'none',
+                  width: 56,
+                  height: 56,
+                  borderRadius: 999,
+                  border: `3px solid ${sel ? "var(--accent)" : "transparent"}`,
+                  background: c.hex_code,
+                  boxShadow: sel ? "0 0 12px rgba(212,175,55,0.4)" : "none",
+                  transform: sel ? "scale(1.06)" : "none",
+                  transition: "transform .18s ease, border-color .18s, box-shadow .18s",
+                  borderColor: sel ? "var(--accent)" : "transparent",
+                } as React.CSSProperties}
+              />
+              {sel && (
+                <span
+                  style={{
+                    position: "absolute",
+                    top: 18,
+                    width: 18,
+                    height: 18,
+                    borderRadius: 999,
+                    background: "var(--accent)",
+                    color: "#0B0B0B",
+                    fontSize: 11,
+                    display: "grid",
+                    placeItems: "center",
+                    pointerEvents: "none",
+                  }}
+                >
+                  ✓
+                </span>
+              )}
+              <span
+                style={{
+                  fontSize: 12,
+                  color: sel ? "#fff" : "var(--muted)",
+                  textAlign: "center",
                 }}
               >
-                {isSelected && (
-                  <motion.div
-                    initial={{ scale: 0 }}
-                    animate={{ scale: 1 }}
-                    transition={{ type: 'spring', stiffness: 300 }}
-                  >
-                    <Check
-                      className="w-5 h-5"
-                      style={{ color: isLightColor(color.hex_code) ? '#0b0b0b' : '#ffffff' }}
-                    />
-                  </motion.div>
-                )}
-              </div>
-
-              {/* اسم اللون */}
-              <span
-                className="text-xs text-center leading-tight transition-colors"
-                style={{ color: isSelected ? 'var(--color-gold)' : 'var(--color-muted)', fontWeight: isSelected ? 600 : 400 }}
-              >
-                {color.name}
+                {c.name}
+                {priceLabel}
               </span>
-            </motion.button>
+            </div>
           );
         })}
       </div>
-
-      {selectedColor && (
-        <motion.p
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          style={{ color: 'var(--color-muted)', fontSize: 'var(--text-sm)' }}
-        >
-          تم الاختيار:{' '}
-          <strong style={{ color: 'white' }}>{selectedColor.name}</strong>
-          <span style={{ marginRight: '8px', color: 'var(--color-muted)', fontSize: 'var(--text-xs)' }}>
-            ({selectedColor.hex_code})
-          </span>
-        </motion.p>
-      )}
+      <style>{`@media(min-width:640px){ .color-grid{ grid-template-columns: repeat(6,1fr) !important; } } .color-opt:hover .color-circle{ transform:scale(1.08) }`}</style>
     </div>
   );
-}
-
-/**
- * يتحقق مما إذا كان اللون فاتحاً لضمان تباين علامة الاختيار.
- * @param hex - سلسلة اللون بصيغة hex
- */
-function isLightColor(hex: string): boolean {
-  const clean = hex.replace('#', '');
-  const r = parseInt(clean.substring(0, 2), 16);
-  const g = parseInt(clean.substring(2, 4), 16);
-  const b = parseInt(clean.substring(4, 6), 16);
-  return (0.299 * r + 0.587 * g + 0.114 * b) / 255 > 0.5;
 }

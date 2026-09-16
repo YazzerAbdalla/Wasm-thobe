@@ -1,54 +1,37 @@
-/**
- * @file Builder.tsx
- * @description صفحة منشئ الثوب — وضع ليلي عربي.
- *              Orchestrates the 4-step Arab-first dark mode thobe builder wizard.
- */
+import { useEffect, useCallback } from "react";
+import { useBuilderStore } from "./builderStore";
+import { api } from "../../services/api";
+import ThobePreview from "./ThobePreview";
+import ColorStep from "./steps/ColorStep";
+import FabricStep from "./steps/FabricStep";
+import AccessoriesStep from "./steps/AccessoriesStep";
+import ReviewStep from "./steps/ReviewStep";
+import { RefreshCw } from "lucide-react";
 
-import { useEffect, useCallback } from 'react';
-import { AnimatePresence, motion } from 'motion/react';
-import { ChevronRight, ChevronLeft, RefreshCw } from 'lucide-react';
-import { useBuilderStore } from './builderStore';
-import { api } from '../../services/api';
-import ThobePreview from './ThobePreview';
-import ColorStep from './steps/ColorStep';
-import FabricStep from './steps/FabricStep';
-import AccessoriesStep from './steps/AccessoriesStep';
-import ReviewStep from './steps/ReviewStep';
-
-// --- بيانات تجريبية للتطوير ---
 const MOCK_COLORS = [
-  { id: 'c1',  name: 'أبيض ناصع',   hex_code: '#FFFFFF' },
-  { id: 'c2',  name: 'عاجي',         hex_code: '#FFFFF0' },
-  { id: 'c3',  name: 'لؤلؤي',        hex_code: '#EAE0C8' },
-  { id: 'c4',  name: 'كريمي',        hex_code: '#FFFDD0' },
-  { id: 'c5',  name: 'رمادي فاتح',  hex_code: '#D3D3D3' },
-  { id: 'c6',  name: 'فضي',          hex_code: '#C0C0C0' },
-  { id: 'c7',  name: 'بيج',          hex_code: '#F5F5DC' },
-  { id: 'c8',  name: 'أزرق سماوي',  hex_code: '#87CEEB' },
-  { id: 'c9',  name: 'كحلي',         hex_code: '#000080' },
-  { id: 'c10', name: 'أخضر غابي',   hex_code: '#228B22' },
-  { id: 'c11', name: 'رمادي داكن',  hex_code: '#36454F' },
-  { id: 'c12', name: 'أسود',         hex_code: '#1a1a1a' },
+  { id: "cream", name: "أبيض لؤلؤي", hex_code: "#F5F0E8", price: 0 },
+  { id: "sand", name: "بيج صحراوي", hex_code: "#E8DCC6", price: 0 },
+  { id: "stone", name: "رمادي حجري", hex_code: "#8A8A8A", price: 0 },
+  { id: "charcoal", name: "فحمي أصيل", hex_code: "#2B2B2B", price: 25 },
+  { id: "navy", name: "كحلي ملوكي", hex_code: "#1A2332", price: 25 },
+  { id: "midnight", name: "أسود ليل", hex_code: "#0A0A0B", price: 15 },
 ];
 
 const MOCK_FABRICS = [
-  { id: 'f1', name: 'قطن مصري', description: 'خفيف وناعم، مثالي للاستخدام اليومي.', price_multiplier: 1, texture_class: 'fabric-cotton' },
-  { id: 'f2', name: 'كتان فاخر', description: 'وزن خفيف بملمس طبيعي. رائع لفصل الصيف.', price_multiplier: 1.2, texture_class: 'fabric-linen' },
-  { id: 'f3', name: 'صوف ميرينو', description: 'دافئ وأنيق. مثالي للمناسبات الرسمية.', price_multiplier: 1.5, texture_class: 'fabric-wool' },
-  { id: 'f4', name: 'حرير فاخر', description: 'ناعم كالحرير مع بريق خفي. ذروة الفخامة.', price_multiplier: 2, texture_class: 'fabric-silk' },
+  { id: "cotton", name: "قطن مصري فاخر", description: "ملمس حريري، تهوية عالية — للاستخدام اليومي الراقي", price: 0, price_multiplier: 1, texture_class: "fabric-cotton", thumb: "linear-gradient(135deg,#F5F0E8,#E8DCC6)", rec: true },
+  { id: "wool", name: "صوف خفيف مبرد", description: "انسدال مهيب وخفة — مثالي للمناسبات", price: 120, price_multiplier: 1.35, texture_class: "fabric-wool", thumb: "linear-gradient(135deg,#8A8A8A,#C8B08A)" },
+  { id: "linen", name: "كتان طبيعي فاخر", description: "نفس طبيعي وملمس محبب — صيفي بامتياز", price: 80, price_multiplier: 1.23, texture_class: "fabric-linen", thumb: "linear-gradient(135deg,#E8DCC6,#C8B08A)" },
 ];
 
 const MOCK_ACCESSORIES = [
-  { id: 'a1', name: 'تطريز ذهبي',      type: 'decoration',     extra_price: 80 },
-  { id: 'a2', name: 'أزرار فضية',       type: 'cufflinks',      extra_price: 60 },
-  { id: 'a3', name: 'خياطة مونوغرام',  type: 'personalization', extra_price: 40 },
-  { id: 'a4', name: 'جيب صدر',          type: 'pocket',         extra_price: 25 },
+  { id: "collar", name: "ياقة مرتفعة ذهبية", type: "collar", description: "حافة ذهبية رفيعة — لمسة ملوكية", extra_price: 45, price: 45 },
+  { id: "cuff", name: "أزرار صدف فاخرة", type: "cuff", description: "صدف طبيعي مصقول يدوياً", extra_price: 35, price: 35 },
+  { id: "emb", name: "تطريز يدوي على الصدر", type: "emb", description: "زخرفة هندسية دقيقة بخيط حريري", extra_price: 95, price: 95 },
+  { id: "pocket", name: "جيب مخفي أنيق", type: "pocket", description: "عملي بلا أن يقطع انسياب الثوب", extra_price: 25, price: 25 },
 ];
 
-/** تسميات خطوات المعالج */
-const STEP_LABELS = ['اللون', 'القماش', 'الإضافات', 'المراجعة'];
+const STEP_LABELS = ["اللون", "القماش", "الإضافات", "المراجعة"];
 
-/** يُعيد مكوّن الخطوة المناسب */
 function renderStep(step: number) {
   switch (step) {
     case 1: return <ColorStep />;
@@ -59,31 +42,39 @@ function renderStep(step: number) {
   }
 }
 
-/** صفحة منشئ الثوب */
 export default function Builder() {
   const {
     currentStep, totalSteps,
     selectedColor, selectedFabric, selectedAccessories,
     isLoadingOptions, optionsError,
     setColors, setFabrics, setAccessories,
-    setLoadingOptions, setOptionsError, setRecommendation,
-    nextStep, prevStep,
+    setLoadingOptions, setOptionsError, setRecommendation, goToStep,
   } = useBuilderStore();
 
-  /** جلب خيارات التخصيص من الخادم مع احتياطي تجريبي */
   const fetchOptions = useCallback(async () => {
     setLoadingOptions(true);
     setOptionsError(null);
     try {
-      const res = await api.get('/customization/options');
-      setColors(res.data.colors);
-      setFabrics(res.data.fabrics);
-      setAccessories(res.data.accessories);
+      const res = await api.get("/customization/options");
+      const colors = (res.data.colors || []).map((c: { id: string; name: string; hex_code: string; hexCode?: string; price?: number }) => ({ ...c, hex_code: c.hex_code || c.hexCode, price: c.price ?? 0 }));
+      const fabrics = (res.data.fabrics || []).map((f: { id: string; name: string; description?: string; desc?: string; price?: number; price_multiplier?: number; texture_class?: string; thumb?: string }) => ({
+        id: f.id, name: f.name, description: f.description || f.desc || "", price: f.price ?? (f.price_multiplier ? Math.round(349 * (f.price_multiplier - 1)) : 0), price_multiplier: f.price_multiplier ?? 1, texture_class: f.texture_class || "", thumb: f.thumb,
+      }));
+      const accessories = (res.data.accessories || []).map((a: { id: string; name: string; type?: string; description?: string; desc?: string; extra_price?: number; price?: number }) => ({
+        id: a.id, name: a.name, type: a.type || a.id, description: a.description || a.desc || "", extra_price: a.extra_price ?? a.price ?? 0, price: a.price ?? a.extra_price ?? 0,
+      }));
+      setColors(colors.length ? colors : MOCK_COLORS);
+      setFabrics(fabrics.length ? fabrics : MOCK_FABRICS);
+      setAccessories(accessories.length ? accessories : MOCK_ACCESSORIES);
+      // Preselect first if none
+      if (!useBuilderStore.getState().selectedColor) useBuilderStore.getState().selectColor((colors[0] || MOCK_COLORS[0]) as never);
+      if (!useBuilderStore.getState().selectedFabric) useBuilderStore.getState().selectFabric((fabrics[0] || MOCK_FABRICS[0]) as never);
     } catch {
-      // الخادم غير متاح — نستخدم البيانات التجريبية
-      setColors(MOCK_COLORS);
-      setFabrics(MOCK_FABRICS);
-      setAccessories(MOCK_ACCESSORIES);
+      setColors(MOCK_COLORS as never);
+      setFabrics(MOCK_FABRICS as never);
+      setAccessories(MOCK_ACCESSORIES as never);
+      if (!useBuilderStore.getState().selectedColor) useBuilderStore.getState().selectColor(MOCK_COLORS[0] as never);
+      if (!useBuilderStore.getState().selectedFabric) useBuilderStore.getState().selectFabric(MOCK_FABRICS[0] as never);
     } finally {
       setLoadingOptions(false);
     }
@@ -91,191 +82,124 @@ export default function Builder() {
 
   useEffect(() => { fetchOptions(); }, [fetchOptions]);
 
-  /** استدعاء نقطة التخصيص للحصول على توصية الذكاء الاصطناعي */
-  const triggerRecommendation = useCallback(async () => {
+  useEffect(() => {
     if (!selectedColor || !selectedFabric) return;
-    try {
-      const res = await api.post('/customization', {
-        color_id: selectedColor.id,
-        fabric_id: selectedFabric.id,
-        accessory_ids: selectedAccessories.map((a) => a.id),
-      });
-      setRecommendation(res.data.id, res.data.recommendation_label);
-    } catch {
-      setRecommendation('mock-id', 'أسلوب مميز');
-    }
+    api.post("/customization", { color_id: selectedColor.id, fabric_id: selectedFabric.id, accessory_ids: selectedAccessories.map((a) => a.id) })
+      .then((res) => setRecommendation(res.data.id, res.data.recommendation_label))
+      .catch(() => {});
   }, [selectedColor, selectedFabric, selectedAccessories, setRecommendation]);
 
-  /** التحقق من صحة الخطوة الحالية قبل التقدم */
-  const canAdvance = (): boolean => {
-    if (currentStep === 1) return !!selectedColor;
-    if (currentStep === 2) return !!selectedFabric;
-    return true;
-  };
-
-  const handleNext = async () => {
-    if (!canAdvance()) return;
-    if (currentStep === 2) await triggerRecommendation();
-    nextStep();
-  };
-
-  // -- ألوان التصميم --
-  const cardBg    = 'rgba(255,255,255,0.04)';
-  const cardBorder= '1px solid rgba(255,255,255,0.1)';
-
   return (
-    <div style={{ minHeight: 'calc(100vh - 80px)', backgroundColor: 'var(--color-black)' }}>
-      <div className="max-w-6xl mx-auto px-4 py-10">
-
-        {/* عنوان الصفحة */}
-        <div className="mb-8 text-center">
-          <h1 className="font-heading" style={{ color: 'var(--color-gold)', fontSize: 'var(--text-4xl)' }}>
-            صمّم ثوبك
-          </h1>
-          <p style={{ color: 'var(--color-muted)', marginTop: '8px' }}>
-            ابنِ ثوبك التقليدي المثالي خطوةً بخطوة
-          </p>
-        </div>
-
-        {/* شريط التقدم */}
-        <div className="flex items-center justify-center gap-2 mb-10">
-          {STEP_LABELS.map((label, index) => {
-            const step = index + 1;
-            const isCompleted = step < currentStep;
-            const isCurrent   = step === currentStep;
-            return (
-              <div key={step} className="flex items-center gap-2">
-                <div className="flex flex-col items-center gap-1">
-                  <motion.div
-                    animate={{
-                      backgroundColor: isCompleted ? '#d4af37' : isCurrent ? '#fff' : 'rgba(255,255,255,0.1)',
-                      color:           isCompleted || isCurrent ? '#0b0b0b' : '#8a8a8a',
-                      scale:           isCurrent ? 1.15 : 1,
-                    }}
-                    transition={{ duration: 0.3 }}
-                    className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold"
-                  >
-                    {isCompleted ? '✓' : step}
-                  </motion.div>
-                  <span
-                    className="text-xs hidden sm:block"
-                    style={{ color: isCurrent ? 'white' : 'var(--color-muted)', fontWeight: isCurrent ? 600 : 400 }}
-                  >
-                    {label}
-                  </span>
-                </div>
-                {index < STEP_LABELS.length - 1 && (
-                  <motion.div
-                    animate={{ backgroundColor: isCompleted ? 'var(--color-gold)' : 'rgba(255,255,255,0.1)' }}
-                    transition={{ duration: 0.3 }}
-                    className="w-10 sm:w-16 h-0.5 mb-4"
-                  />
-                )}
-              </div>
-            );
-          })}
-        </div>
-
-        {/* التخطيط الرئيسي */}
-        <div className="flex flex-col lg:flex-row gap-6">
-          {/* المعاينة المباشرة */}
-          <div className="lg:w-64 lg:shrink-0">
-            <div
-              className="sticky top-24 rounded-2xl p-6 flex flex-col items-center gap-4"
-              style={{ background: cardBg, border: cardBorder, backdropFilter: 'blur(8px)' }}
-            >
-              <p
-                className="text-xs font-medium uppercase tracking-wider"
-                style={{ color: 'var(--color-muted)' }}
-              >
-                معاينة مباشرة
-              </p>
-              {isLoadingOptions ? (
-                <div className="w-48 h-64 flex items-center justify-center">
-                  <RefreshCw className="w-8 h-8 animate-spin" style={{ color: 'var(--color-gold)' }} />
-                </div>
-              ) : (
-                <ThobePreview />
-              )}
-            </div>
-          </div>
-
-          {/* محتوى الخطوة */}
-          <div
-            className="flex-1 rounded-2xl p-8"
-            style={{ background: cardBg, border: cardBorder, backdropFilter: 'blur(8px)' }}
-          >
-            {isLoadingOptions ? (
-              <div className="space-y-4 animate-pulse">
-                <div className="h-8 rounded w-1/3" style={{ background: 'rgba(255,255,255,0.1)' }} />
-                <div className="h-4 rounded w-1/2" style={{ background: 'rgba(255,255,255,0.06)' }} />
-                <div className="grid grid-cols-4 gap-4 mt-6">
-                  {[...Array(8)].map((_, i) => (
-                    <div key={i} className="w-12 h-12 rounded-full" style={{ background: 'rgba(255,255,255,0.1)' }} />
-                  ))}
-                </div>
-              </div>
-            ) : optionsError ? (
-              <div className="text-center py-12 space-y-4">
-                <p style={{ color: '#f87171' }}>{optionsError}</p>
-                <button
-                  onClick={fetchOptions}
-                  className="px-4 py-2 rounded-lg font-semibold bg-gold-gradient text-black"
-                >
-                  إعادة المحاولة
-                </button>
-              </div>
-            ) : (
-              <>
-                <AnimatePresence mode="wait">
-                  <motion.div
-                    key={currentStep}
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: 20 }}
-                    transition={{ duration: 0.25, ease: 'easeInOut' }}
-                  >
-                    {renderStep(currentStep)}
-                  </motion.div>
-                </AnimatePresence>
-
-                {/* أزرار التنقل */}
-                {currentStep < totalSteps && (
-                  <div
-                    className="flex items-center justify-between mt-10 pt-6"
-                    style={{ borderTop: '1px solid rgba(255,255,255,0.08)' }}
-                  >
-                    <button
-                      onClick={prevStep}
-                      disabled={currentStep === 1}
-                      className="flex items-center gap-2 px-4 py-2 rounded-lg transition"
-                      style={{ color: currentStep === 1 ? 'var(--color-muted)' : 'white', opacity: currentStep === 1 ? 0.3 : 1 }}
-                    >
-                      <ChevronRight className="w-4 h-4" />
-                      السابق
-                    </button>
-
-                    <span style={{ color: 'var(--color-muted)', fontSize: 'var(--text-xs)' }}>
-                      الخطوة {currentStep} من {totalSteps}
-                    </span>
-
-                    <motion.button
-                      whileHover={{ scale: canAdvance() ? 1.03 : 1 }}
-                      whileTap={{ scale: 0.97 }}
-                      onClick={handleNext}
-                      disabled={!canAdvance()}
-                      className="flex items-center gap-2 px-6 py-2.5 rounded-lg font-semibold bg-gold-gradient text-black disabled:opacity-40"
-                    >
-                      التالي
-                      <ChevronLeft className="w-4 h-4" />
-                    </motion.button>
-                  </div>
-                )}
-              </>
-            )}
-          </div>
-        </div>
+    <div style={{ paddingTop: 32, paddingBottom: 64 } as React.CSSProperties} className="container-atelier">
+      <div style={{ textAlign: "center", marginBottom: 18 }}>
+        <p className="eyebrow">المصمم</p>
+        <h1 style={{ fontSize: 32, margin: "8px 0" } as React.CSSProperties} className="gold-text">
+          صمّم ثوبك
+        </h1>
+        <p style={{ color: "var(--muted)", fontSize: 14, margin: 0 }}>اختر التفاصيل وشاهد ثوبك يتشكّل أمامك — السعر يتحدّث لحظياً.</p>
       </div>
+
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          gap: 8,
+          marginBottom: 28,
+          maxWidth: 760,
+          marginInline: "auto",
+        } as React.CSSProperties}
+      >
+        {STEP_LABELS.map((label, idx) => {
+          const n = idx + 1;
+          const isCurrent = currentStep === n;
+          const isDone = n < currentStep;
+          return (
+            <>
+              <div key={n} onClick={() => goToStep(n)} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8, minWidth: 84, cursor: "pointer" }}>
+                <div
+                  style={{
+                    width: 44,
+                    height: 44,
+                    borderRadius: 999,
+                    display: "grid",
+                    placeItems: "center",
+                    fontFamily: "var(--font-mono)",
+                    fontSize: 13,
+                    fontWeight: 600,
+                    border: "2px solid",
+                    borderColor: isCurrent || isDone ? "var(--accent)" : "rgba(255,255,255,0.12)",
+                    color: isCurrent ? "#0B0B0B" : isDone ? "var(--accent)" : "var(--muted)",
+                    background: isCurrent ? "var(--accent)" : isDone ? "transparent" : "rgba(255,255,255,0.03)",
+                    transform: isCurrent ? "scale(1.15)" : "none",
+                    boxShadow: isCurrent ? "0 0 16px rgba(212,175,55,0.35)" : "none",
+                    transition: "all .3s ease",
+                  }}
+                >
+                  {isDone ? "✓" : n}
+                </div>
+                <span style={{ fontSize: 12, color: isCurrent ? "var(--accent)" : isDone ? "#fff" : "var(--muted)", fontWeight: isCurrent ? 600 : 400 }}>
+                  {label}
+                </span>
+              </div>
+              {idx < STEP_LABELS.length - 1 && <div style={{ flex: 1, height: 1, background: idx < currentStep - 1 ? "var(--accent)" : "rgba(255,255,255,0.12)" }} />}
+            </>
+          );
+        })}
+      </div>
+
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "1fr",
+          gap: 24,
+          alignItems: "start",
+          maxWidth: 1120,
+          marginInline: "auto",
+        } as React.CSSProperties}
+        className="builder-grid"
+      >
+        <section className="glass" style={{ padding: 28 }}>
+          {isLoadingOptions ? (
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "center", padding: 40 }}>
+              <RefreshCw style={{ width: 28, height: 28, color: "var(--accent)" }} className="animate-spin" />
+            </div>
+          ) : optionsError ? (
+            <div style={{ textAlign: "center", padding: "32px 0", display: "flex", flexDirection: "column", gap: 12, alignItems: "center" }}>
+              <p style={{ color: "#FCA5A5" }}>{optionsError}</p>
+              <button className="btn btn-primary" onClick={fetchOptions}>
+                إعادة المحاولة
+              </button>
+            </div>
+          ) : (
+            <>
+              <div style={{ opacity: 1, transition: "all .25s ease" }}>{renderStep(currentStep)}</div>
+              {currentStep < totalSteps && (
+                <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 24 }}>
+                  <button
+                    className="btn btn-primary"
+                    onClick={() => goToStep(Math.min(totalSteps, currentStep + 1))}
+                    style={{ opacity: (!selectedColor && currentStep === 1) || (!selectedFabric && currentStep === 2) ? 0.5 : 1 }}
+                  >
+                    التالي — {STEP_LABELS[currentStep]} ←
+                  </button>
+                </div>
+              )}
+              {currentStep > 1 && currentStep < totalSteps && (
+                <div style={{ display: "flex", justifyContent: "flex-start", marginTop: -42 }}>
+                  <button className="btn btn-outline" onClick={() => goToStep(currentStep - 1)}>
+                    السابق →
+                  </button>
+                </div>
+              )}
+            </>
+          )}
+        </section>
+
+        <ThobePreview />
+      </div>
+
+      <style>{`@media(min-width:1024px){ .builder-grid{ grid-template-columns: 1.15fr 0.85fr !important; } }`}</style>
     </div>
   );
 }

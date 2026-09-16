@@ -1,10 +1,105 @@
+import { useState } from "react";
+
 export default function Contact() {
+  const [ok, setOk] = useState(false);
+
   return (
-    <section className="pt-32 px-6 max-w-5xl mx-auto">
-      <h1 className="text-4xl font-heading text-gold mb-4">تواصل معنا</h1>
-      <p className="text-white/70">
-        اترك بياناتك وسيتواصل فريقنا معك في أقرب وقت.
-      </p>
-    </section>
+    <div className="container-atelier" style={{ padding: "48px 0 64px" } as React.CSSProperties}>
+      <div style={{ textAlign: "center", maxWidth: 640, margin: "0 auto 32px" }}>
+        <p className="eyebrow">Contact</p>
+        <h1 className="gold-text" style={{ fontSize: 32, margin: "8px 0" }}>
+          تواصل معنا
+        </h1>
+        <p style={{ color: "var(--muted)", margin: 0 }}>نسمع بعناية — سواء سؤال عن المقاس، موعد قياس في الأتيليه، أو متابعة طلب.</p>
+      </div>
+
+      <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: 22, alignItems: "start" } as React.CSSProperties} className="contact-grid">
+        <div className="glass" style={{ padding: 24 }}>
+          <h3 style={{ fontSize: 18, margin: "0 0 16px" }}>أرسل رسالة</h3>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+            <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+              <label style={{ fontSize: 13, color: "var(--muted)" }}>الاسم</label>
+              <input placeholder="مثال: عبدالله السعيد" style={inputStyle} />
+            </div>
+            <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+              <label style={{ fontSize: 13, color: "var(--muted)" }}>رقم الجوال</label>
+              <input placeholder="+966 5x xxx xxxx" style={inputStyle} />
+            </div>
+          </div>
+          <div style={{ display: "flex", flexDirection: "column", gap: 6, marginTop: 12 }}>
+            <label style={{ fontSize: 13, color: "var(--muted)" }}>البريد الإلكتروني</label>
+            <input placeholder="you@example.com" style={inputStyle} />
+          </div>
+          <div style={{ display: "flex", flexDirection: "column", gap: 6, marginTop: 12 }}>
+            <label style={{ fontSize: 13, color: "var(--muted)" }}>الموضوع</label>
+            <input placeholder="استفسار عن المقاس / موعد / طلب" style={inputStyle} />
+          </div>
+          <div style={{ display: "flex", flexDirection: "column", gap: 6, marginTop: 12 }}>
+            <label style={{ fontSize: 13, color: "var(--muted)" }}>الرسالة</label>
+            <textarea placeholder="اكتب رسالتك هنا..." style={{ ...inputStyle, minHeight: 118, resize: "vertical" as const }} />
+          </div>
+          <button className="btn btn-primary" style={{ width: "100%", marginTop: 16 }} onClick={() => setOk(true)}>
+            إرسال الرسالة
+          </button>
+          {ok && (
+            <p style={{ marginTop: 12, padding: 10, background: "rgba(34,197,94,0.12)", border: "1px solid rgba(34,197,94,0.24)", borderRadius: 10, fontSize: 13, color: "#86EFAC", textAlign: "center" }}>
+              تم الإرسال — سنرد خلال ساعتين في أوقات العمل.
+            </p>
+          )}
+        </div>
+
+        <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+          <div className="glass" style={{ padding: 16, display: "flex", gap: 14, alignItems: "center" }}>
+            <div style={{ width: 42, height: 42, borderRadius: 12, display: "grid", placeItems: "center", background: "rgba(212,175,55,0.10)", border: "1px solid rgba(212,175,55,0.18)", color: "var(--accent)" }}>✆</div>
+            <div>
+              <div style={{ fontSize: 13, color: "var(--muted)" }}>اتصال / واتساب</div>
+              <div style={{ fontWeight: 600, fontFamily: "var(--font-mono)" }}>+966 11 234 5678</div>
+            </div>
+          </div>
+          <div className="glass" style={{ padding: 16, display: "flex", gap: 14, alignItems: "center" }}>
+            <div style={{ width: 42, height: 42, borderRadius: 12, display: "grid", placeItems: "center", background: "rgba(212,175,55,0.10)", border: "1px solid rgba(212,175,55,0.18)", color: "var(--accent)" }}>◉</div>
+            <div>
+              <div style={{ fontSize: 13, color: "var(--muted)" }}>الأتيليه — الرياض</div>
+              <div style={{ fontWeight: 500 }}>حي السليمانية، شارع التحلية — موعد بطلب مسبق</div>
+              <div style={{ fontSize: 12, color: "var(--muted)", marginTop: 4 }}>السبت – الخميس · 10ص – 8م</div>
+            </div>
+          </div>
+          <div className="glass" style={{ padding: 16, display: "flex", gap: 14, alignItems: "center" }}>
+            <div style={{ width: 42, height: 42, borderRadius: 12, display: "grid", placeItems: "center", background: "rgba(212,175,55,0.10)", border: "1px solid rgba(212,175,55,0.18)", color: "var(--accent)" }}>✉</div>
+            <div>
+              <div style={{ fontSize: 13, color: "var(--muted)" }}>البريد</div>
+              <div style={{ fontFamily: "var(--font-mono)", fontSize: 14 }}>atelier@wasm.sa</div>
+            </div>
+          </div>
+          <div
+            className="glass"
+            style={{
+              padding: 16,
+              minHeight: 180,
+              display: "grid",
+              placeItems: "center",
+              background: "radial-gradient(300px 180px at 50% 30%, rgba(212,175,55,0.12), transparent 60%), linear-gradient(180deg, #1D1D1B, #0B0B0B)",
+            }}
+          >
+            <div style={{ textAlign: "center" }}>
+              <div style={{ fontSize: 12, color: "var(--muted)", fontFamily: "var(--font-mono)" }}>MAP · RIYADH ATELIER</div>
+              <div style={{ marginTop: 8, fontSize: 13, color: "#fff" }}>خريطة تفاعلية قريباً — حالياً بالموعد فقط</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <style>{`@media(min-width:980px){ .contact-grid{ grid-template-columns: 1.1fr 0.9fr !important; } }`}</style>
+    </div>
   );
 }
+
+const inputStyle: React.CSSProperties = {
+  width: "100%",
+  padding: "12px 14px",
+  borderRadius: 10,
+  background: "rgba(255,255,255,0.08)",
+  border: "1px solid rgba(255,255,255,0.10)",
+  color: "#fff",
+  fontSize: 14,
+};

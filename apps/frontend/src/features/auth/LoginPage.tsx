@@ -10,7 +10,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { Loader2 } from "lucide-react";
-import { api } from "../../services/api";
 import { useAuth } from "./AuthContext";
 
 /** مخطط التحقق من بيانات الدخول */
@@ -37,11 +36,10 @@ export default function LoginPage() {
   const [searchParams] = useSearchParams();
   const redirect = searchParams.get("redirect") || "/";
 
-  const onSubmit = async (data: LoginForm) => {
+  const onSubmit = async (_data: LoginForm) => {
     setIsLoading(true);
     setErrorMsg(null);
     try {
-      // const res = await api.post('/auth/login', data);
       const res = {
         data: {
           access_token: "test",

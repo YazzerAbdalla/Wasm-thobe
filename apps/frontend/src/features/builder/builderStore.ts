@@ -1,64 +1,59 @@
-/**
- * @file builderStore.ts
- * @description Zustand store for managing the Thobe Builder wizard state.
- *              Holds user selections (color, fabric, accessories), available options from the API,
- *              the current step, and the recommendation label.
- */
-
 import { create } from 'zustand';
 
-// --- Interfaces ---
-
-/** Represents a color option from the API */
 export interface IColor {
-  id: string;
-  name: string;
-  hex_code: string;
+  readonly id: string;
+  readonly name: string;
+  readonly hex_code: string;
+  /** Price delta vs base (ref: 0,15,25). Falls back to 0 if missing. */
+  readonly price?: number;
 }
 
-/** Represents a fabric option from the API */
 export interface IFabric {
-  id: string;
-  name: string;
-  description: string;
-  price_multiplier: number;
-  texture_class: string;
+  readonly id: string;
+  readonly name: string;
+  readonly description: string;
+  /** Additive price (ref model). Keep multiplier for backend compat. */
+  readonly price: number;
+  readonly price_multiplier: number;
+  readonly texture_class: string;
+  readonly thumb?: string;
+  readonly rec?: boolean;
 }
 
-/** Represents an accessory option from the API */
 export interface IAccessory {
-  id: string;
-  name: string;
-  type: string;
-  extra_price: number;
+  readonly id: string;
+  readonly name: string;
+  readonly type: string;
+  readonly description?: string;
+  readonly extra_price: number;
+  /** Alias for ref price */
+  readonly price?: number;
 }
 
-/** The shape of the builder state */
 interface IBuilderState {
-  // Step navigation
   currentStep: number;
   totalSteps: number;
 
-  // Available options fetched from the API
   colors: IColor[];
   fabrics: IFabric[];
   accessories: IAccessory[];
   isLoadingOptions: boolean;
   optionsError: string | null;
 
-  // User selections
   selectedColor: IColor | null;
   selectedFabric: IFabric | null;
   selectedAccessories: IAccessory[];
 
-  // Recommendation from API
+  // Guest checkout (ref)
+  guestName: string;
+  guestCC: string;
+  guestPhone: string;
+
   customizationId: string | null;
   recommendationLabel: string | null;
 
-  // Computed price (local calculation)
   basePrice: number;
 
-  // Actions
   setColors: (colors: IColor[]) => void;
   setFabrics: (fabrics: IFabric[]) => void;
   setAccessories: (accessories: IAccessory[]) => void;
@@ -68,6 +63,10 @@ interface IBuilderState {
   selectColor: (color: IColor) => void;
   selectFabric: (fabric: IFabric) => void;
   toggleAccessory: (accessory: IAccessory) => void;
+
+  setGuestName: (v: string) => void;
+  setGuestCC: (v: string) => void;
+  setGuestPhone: (v: string) => void;
 
   setRecommendation: (id: string, label: string) => void;
 
@@ -79,11 +78,9 @@ interface IBuilderState {
   reset: () => void;
 }
 
-/** Base price for a thobe in SAR */
-const BASE_PRICE = 200;
+const BASE_PRICE = 349;
 
 export const useBuilderStore = create<IBuilderState>((set, get) => ({
-  // --- Initial State ---
   currentStep: 1,
   totalSteps: 4,
 
@@ -97,63 +94,54 @@ export const useBuilderStore = create<IBuilderState>((set, get) => ({
   selectedFabric: null,
   selectedAccessories: [],
 
+  guestName: "",
+  guestCC: "+966",
+  guestPhone: "",
+
   customizationId: null,
   recommendationLabel: null,
   basePrice: BASE_PRICE,
 
-  // --- Option setters ---
   setColors: (colors) => set({ colors }),
   setFabrics: (fabrics) => set({ fabrics }),
   setAccessories: (accessories) => set({ accessories }),
   setLoadingOptions: (loading) => set({ isLoadingOptions: loading }),
   setOptionsError: (error) => set({ optionsError: error }),
 
-  // --- Selection actions ---
   selectColor: (color) => set({ selectedColor: color }),
-
   selectFabric: (fabric) => set({ selectedFabric: fabric }),
 
   toggleAccessory: (accessory) => {
     const current = get().selectedAccessories;
     const exists = current.find((a) => a.id === accessory.id);
     if (exists) {
-      // Remove if already selected
       set({ selectedAccessories: current.filter((a) => a.id !== accessory.id) });
     } else {
-      // Add to selection
       set({ selectedAccessories: [...current, accessory] });
     }
   },
 
-  // --- Recommendation ---
-  setRecommendation: (id, label) =>
-    set({ customizationId: id, recommendationLabel: label }),
+  setGuestName: (v) => set({ guestName: v }),
+  setGuestCC: (v) => set({ guestCC: v }),
+  setGuestPhone: (v) => set({ guestPhone: v }),
 
-  // --- Navigation ---
+  setRecommendation: (id, label) => set({ customizationId: id, recommendationLabel: label }),
+
   goToStep: (step) => set({ currentStep: step }),
-  nextStep: () =>
-    set((state) => ({
-      currentStep: Math.min(state.currentStep + 1, state.totalSteps),
-    })),
-  prevStep: () =>
-    set((state) => ({
-      currentStep: Math.max(state.currentStep - 1, 1),
-    })),
+  nextStep: () => set((s) => ({ currentStep: Math.min(s.currentStep + 1, s.totalSteps) })),
+  prevStep: () => set((s) => ({ currentStep: Math.max(s.currentStep - 1, 1) })),
 
-  // --- Price calculation ---
   getTotalPrice: () => {
-    const { basePrice, selectedFabric, selectedAccessories } = get();
-    // Apply fabric multiplier on top of base price
-    const fabricMultiplied = basePrice * (selectedFabric?.price_multiplier ?? 1);
-    // Sum all accessory extra prices
-    const accessorySum = selectedAccessories.reduce(
-      (sum, acc) => sum + acc.extra_price,
-      0
-    );
-    return Math.round(fabricMultiplied + accessorySum);
+    const { basePrice, selectedColor, selectedFabric, selectedAccessories } = get();
+    const colorPrice = selectedColor?.price ?? 0;
+    // Prefer additive price; fallback to multiplier for backend shapes
+    const fabricPrice = selectedFabric
+      ? (typeof selectedFabric.price === "number" ? selectedFabric.price : Math.round(basePrice * (selectedFabric.price_multiplier - 1)))
+      : 0;
+    const addonSum = selectedAccessories.reduce((sum, a) => sum + (a.extra_price ?? a.price ?? 0), 0);
+    return Math.round(basePrice + colorPrice + fabricPrice + addonSum);
   },
 
-  // --- Reset entire store ---
   reset: () =>
     set({
       currentStep: 1,
@@ -162,5 +150,8 @@ export const useBuilderStore = create<IBuilderState>((set, get) => ({
       selectedAccessories: [],
       customizationId: null,
       recommendationLabel: null,
+      guestName: "",
+      guestCC: "+966",
+      guestPhone: "",
     }),
 }));

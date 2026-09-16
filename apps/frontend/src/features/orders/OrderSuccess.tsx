@@ -1,174 +1,73 @@
-/**
- * @file OrderSuccess.tsx
- * @description شاشة نجاح الطلب — وضع ليلي عربي.
- *              Shown at /orders/success/:orderId after a successful POST /orders.
- */
+import { useParams, Link } from "react-router-dom";
+import { useBuilderStore } from "../builder/builderStore";
 
-import { useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
-import { motion } from 'motion/react';
-import { CheckCircle2, Copy, Check, ShoppingBag, Sparkles } from 'lucide-react';
-import { useBuilderStore } from '../builder/builderStore';
-
-/** شاشة نجاح الطلب */
 export default function OrderSuccess() {
   const { orderId } = useParams<{ orderId: string }>();
-  const {
-    selectedColor, selectedFabric, selectedAccessories,
-    recommendationLabel, getTotalPrice, reset,
-  } = useBuilderStore();
-
-  const [copied, setCopied] = useState(false);
-  const totalPrice = getTotalPrice();
-
-  /** نسخ رقم الطلب إلى الحافظة */
-  const handleCopyId = async () => {
-    if (!orderId) return;
-    await navigator.clipboard.writeText(orderId);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  };
-
-  const cardStyle = {
-    background: 'rgba(255,255,255,0.04)',
-    border: '1px solid rgba(255,255,255,0.1)',
-    backdropFilter: 'blur(8px)',
-  };
+  const { getTotalPrice, guestName, guestCC, guestPhone, reset } = useBuilderStore();
+  const total = getTotalPrice();
+  const date = new Date(Date.now() + 7 * 24 * 3600 * 1000).toLocaleDateString("ar-EG", { year: "numeric", month: "long", day: "numeric" });
 
   return (
-    <div
-      style={{ minHeight: 'calc(100vh - 80px)', backgroundColor: 'var(--color-black)' }}
-      className="flex items-center justify-center px-4 py-16"
-    >
-      <div className="w-full max-w-lg space-y-8" dir="rtl">
-
-        {/* رمز النجاح */}
-        <motion.div
-          initial={{ scale: 0.5, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          transition={{ type: 'spring', stiffness: 200, damping: 15 }}
-          className="flex flex-col items-center text-center gap-4"
+    <div style={{ minHeight: "calc(100vh - 80px)", display: "grid", placeItems: "center", padding: "40px 16px" } as React.CSSProperties}>
+      <div className="glass" style={{ maxWidth: 560, width: "100%", padding: 36, textAlign: "center" }}>
+        <div
+          style={{
+            width: 84,
+            height: 84,
+            borderRadius: 999,
+            margin: "0 auto 18px",
+            display: "grid",
+            placeItems: "center",
+            background: "rgba(34,197,94,0.15)",
+            border: "1px solid rgba(34,197,94,0.3)",
+            color: "#4ADE80",
+            animation: "pop .5s cubic-bezier(.2,.8,.2,1)",
+          }}
         >
-          <div
-            className="w-20 h-20 rounded-full flex items-center justify-center"
-            style={{ background: 'rgba(34,197,94,0.15)', border: '1px solid rgba(34,197,94,0.3)' }}
-          >
-            <CheckCircle2 className="w-10 h-10" style={{ color: '#4ade80' }} />
+          <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.3">
+            <path d="M5 13l4 4L19 7" />
+          </svg>
+        </div>
+        <h2 style={{ fontSize: 26, margin: "0 0 8px" }}>تم تأكيد طلبك — شكراً لثقتك</h2>
+        <p style={{ color: "var(--muted)", fontSize: 14, margin: 0 }}>ثوبك الآن في طاولة الحرفي. ستصلك رسالة عند كل مرحلة، ورقم تتبعك أدناه.</p>
+
+        <dl style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, textAlign: "right" as const, margin: "22px 0" }}>
+          <div style={{ padding: 12, background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 10 }}>
+            <dt style={{ fontSize: 11, color: "var(--muted)", margin: "0 0 6px", fontFamily: "var(--font-mono)", letterSpacing: "0.06em" }}>رقم الطلب</dt>
+            <dd style={{ margin: 0, fontSize: 14, fontWeight: 600, fontFamily: "var(--font-mono)" }}>{orderId ?? "WASM-84291"}</dd>
           </div>
-
-          <h1 className="text-3xl font-heading" style={{ color: 'white' }}>
-            تم تأكيد طلبك!
-          </h1>
-          <p style={{ color: 'var(--color-muted)' }}>
-            ثوبك قيد التصنيع بعناية فائقة. ستصلك رسالة تأكيد قريباً.
-          </p>
-
-          {recommendationLabel && (
-            <div
-              className="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium"
-              style={{ background: 'rgba(212,175,55,0.15)', color: 'var(--color-gold)', border: '1px solid rgba(212,175,55,0.3)' }}
-            >
-              <Sparkles className="w-4 h-4" />
-              <span>{recommendationLabel}</span>
-            </div>
-          )}
-        </motion.div>
-
-        {/* بطاقة رقم الطلب */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-          className="rounded-2xl p-6 space-y-4"
-          style={cardStyle}
-        >
-          <p style={{ color: 'var(--color-muted)', fontSize: 'var(--text-xs)', letterSpacing: '0.12em', textTransform: 'uppercase' }}>
-            رقم الطلب
-          </p>
-
-          {/* رقم قابل للنسخ */}
-          <div
-            className="flex items-center justify-between gap-4 px-4 py-3 rounded-xl"
-            style={{ background: 'rgba(255,255,255,0.06)' }}
-          >
-            <span className="font-mono text-sm break-all" style={{ color: 'white' }}>
-              {orderId ?? 'N/A'}
-            </span>
-            <button
-              onClick={handleCopyId}
-              title="نسخ رقم الطلب"
-              style={{ color: copied ? '#4ade80' : 'var(--color-muted)', flexShrink: 0 }}
-              className="hover:text-white transition-colors"
-            >
-              {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
-            </button>
+          <div style={{ padding: 12, background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 10 }}>
+            <dt style={{ fontSize: 11, color: "var(--muted)", margin: "0 0 6px", fontFamily: "var(--font-mono)", letterSpacing: "0.06em" }}>الإجمالي</dt>
+            <dd style={{ margin: 0, fontSize: 14, fontWeight: 600 }}>SAR {total}</dd>
           </div>
-
-          {/* ملخص سريع */}
-          <div style={{ borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: '16px' }}
-            className="space-y-2 text-sm"
-          >
-            <div className="flex justify-between" style={{ color: 'var(--color-muted)' }}>
-              <span>اللون</span>
-              <div className="flex items-center gap-2">
-                {selectedColor && (
-                  <span
-                    className="w-3 h-3 rounded-full"
-                    style={{ backgroundColor: selectedColor.hex_code, border: '1px solid rgba(255,255,255,0.2)' }}
-                  />
-                )}
-                <span style={{ color: 'white' }}>{selectedColor?.name ?? '—'}</span>
-              </div>
-            </div>
-            <div className="flex justify-between" style={{ color: 'var(--color-muted)' }}>
-              <span>القماش</span>
-              <span style={{ color: 'white' }}>{selectedFabric?.name ?? '—'}</span>
-            </div>
-            <div className="flex justify-between" style={{ color: 'var(--color-muted)' }}>
-              <span>الإضافات</span>
-              <span style={{ color: 'white' }}>
-                {selectedAccessories.length === 0
-                  ? 'لا يوجد'
-                  : selectedAccessories.map((a) => a.name).join('، ')}
-              </span>
-            </div>
-            <div
-              className="flex justify-between font-bold pt-2"
-              style={{ borderTop: '1px solid rgba(255,255,255,0.08)', color: 'var(--color-gold)' }}
-            >
-              <span>الإجمالي المدفوع</span>
-              <span>{totalPrice} ر.س</span>
-            </div>
+          <div style={{ padding: 12, background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 10 }}>
+            <dt style={{ fontSize: 11, color: "var(--muted)", margin: "0 0 6px", fontFamily: "var(--font-mono)", letterSpacing: "0.06em" }}>موعد التسليم المتوقع</dt>
+            <dd style={{ margin: 0, fontSize: 14, fontWeight: 600 }}>{date}</dd>
           </div>
-        </motion.div>
+          <div style={{ padding: 12, background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 10 }}>
+            <dt style={{ fontSize: 11, color: "var(--muted)", margin: "0 0 6px", fontFamily: "var(--font-mono)", letterSpacing: "0.06em" }}>طريقة الدفع</dt>
+            <dd style={{ margin: 0, fontSize: 14, fontWeight: 600 }}>الدفع عند الاستلام</dd>
+          </div>
+        </dl>
 
-        {/* أزرار الإجراء */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.4 }}
-          className="flex flex-col sm:flex-row gap-3"
-        >
-          <Link
-            to="/builder"
-            onClick={reset}
-            className="flex-1 flex items-center justify-center gap-2 px-5 py-3 rounded-xl font-semibold bg-gold-gradient text-black transition-all"
-          >
-            <Sparkles className="w-4 h-4" />
-            تصميم ثوب آخر
+        {(guestName || guestPhone) && (
+          <div style={{ marginTop: 10, padding: "10px 12px", background: "rgba(212,175,55,0.08)", border: "1px solid rgba(212,175,55,0.16)", borderRadius: 10, fontSize: 13, color: "var(--muted)", textAlign: "right" as const }}>
+            <span style={{ color: "#fff", fontWeight: 600 }}>{guestName}</span> · <span dir="ltr" style={{ fontFamily: "var(--font-mono)" }}>{guestCC} {guestPhone}</span> — سنرسل تأكيد واتساب على هذا الرقم.
+          </div>
+        )}
+
+        <div style={{ padding: 12, background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 10, fontSize: 13, color: "var(--muted)", marginTop: 12 }}>
+          ستصلك رسالة واتساب بالتحديثات. يمكنك تتبع الثوب في أي وقت من “تتبع طلبك”.
+        </div>
+
+        <div style={{ display: "flex", gap: 10, marginTop: 18 }}>
+          <Link to="/track" className="btn btn-primary" style={{ flex: 1 }}>
+            تتبع طلبك
           </Link>
-          <Link
-            to="/track"
-            className="flex-1 flex items-center justify-center gap-2 px-5 py-3 rounded-xl font-semibold transition-all"
-            style={{
-              border: '2px solid rgba(255,255,255,0.15)',
-              color: 'white',
-            }}
-          >
-            <ShoppingBag className="w-4 h-4" />
-            متابعة الطلبات
+          <Link to="/" onClick={() => reset()} className="btn btn-outline" style={{ flex: 1 }}>
+            العودة للرئيسية
           </Link>
-        </motion.div>
+        </div>
       </div>
     </div>
   );
