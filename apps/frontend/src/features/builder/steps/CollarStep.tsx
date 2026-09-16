@@ -1,20 +1,21 @@
 import { useBuilderStore } from "../builderStore";
 
-export default function FabricStep() {
-  const { fabrics, selectedFabric, selectFabric } = useBuilderStore();
-
+export default function CollarStep() {
+  const { collars, selectedCollar, selectCollar } = useBuilderStore();
   return (
     <div>
-      <h3 style={{ fontSize: 20, margin: "0 0 6px" }}>اختر القماش</h3>
-      <p style={{ color: "var(--muted)", fontSize: 13, margin: "0 0 18px" }}>الملمس يصنع الهيبة. كل خيار يغيّر انسياب الثوب وسعره بشفافية.</p>
+      <h3 style={{ fontSize: 20, margin: "0 0 6px" }}>اختر الياقة</h3>
+      <p style={{ color: "var(--muted)", fontSize: 13, margin: "0 0 18px" }}>
+        الياقة الواقفة هي هوية الثوب السعودي. اختر ما يناسب المناسبة — واقفة يومية، شريطية مودرن، أو فرنسية رسمية.
+      </p>
       <div style={{ display: "grid", gap: 12 }}>
-        {fabrics.map((f) => {
-          const sel = selectedFabric?.id === f.id;
-          const priceText = (f.price ?? 0) ? `+SAR ${f.price}` : "متضمن";
+        {collars.map((c) => {
+          const sel = selectedCollar?.id === c.id;
+          const priceText = (c.price ?? 0) ? `+SAR ${c.price}` : "متضمن";
           return (
             <div
-              key={f.id}
-              onClick={() => selectFabric(f)}
+              key={c.id}
+              onClick={() => selectCollar(c)}
               style={{
                 display: "flex",
                 gap: 16,
@@ -34,26 +35,14 @@ export default function FabricStep() {
                   height: 64,
                   borderRadius: 10,
                   flex: "0 0 64px",
-                  background: (() => {
-                    const t = (f as { thumb?: string }).thumb;
-                    if (!t) return f.price === 0 ? "linear-gradient(135deg,#F5F0E8,#E8DCC6)" : "linear-gradient(135deg,#8A8A8A,#C8B08A)";
-                    return t.startsWith("/") ? `url('${t}') center/cover no-repeat` : t;
-                  })(),
-                  backgroundSize: "cover",
-                  backgroundPosition: "center",
+                  background: `url('${c.thumb}') center/cover no-repeat, linear-gradient(135deg,#1a1a18,#0b0b0b)`,
                   border: "1px solid rgba(255,255,255,0.08)",
                 }}
+                aria-hidden="true"
               />
               <div style={{ flex: 1 }}>
-                <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-                  <h4 style={{ margin: "0 0 4px", fontSize: 15 }}>{f.name}</h4>
-                  {(f as { rec?: boolean }).rec && (
-                    <span style={{ fontFamily: "var(--font-mono)", fontSize: 10, letterSpacing: "0.06em", background: "var(--accent)", color: "#0B0B0B", padding: "3px 8px", borderRadius: 999, fontWeight: 700 }}>
-                      موصى به
-                    </span>
-                  )}
-                </div>
-                <p style={{ margin: 0, fontSize: 13, color: "var(--muted)" }}>{f.description}</p>
+                <h4 style={{ margin: "0 0 4px", fontSize: 15 }}>{c.name}</h4>
+                <p style={{ margin: 0, fontSize: 13, color: "var(--muted)" }}>{c.description}</p>
               </div>
               <div style={{ textAlign: "left" as const }}>
                 <div style={{ fontFamily: "var(--font-mono)", color: "var(--accent)", fontSize: 13 }}>{priceText}</div>
@@ -62,7 +51,6 @@ export default function FabricStep() {
                     width: 18,
                     height: 18,
                     borderRadius: 999,
-                    border: "1px solid rgba(255,255,255,0.2)",
                     marginTop: 6,
                     marginLeft: "auto",
                     display: "grid",
@@ -70,7 +58,7 @@ export default function FabricStep() {
                     fontSize: 10,
                     background: sel ? "var(--accent)" : "transparent",
                     color: sel ? "#0B0B0B" : "transparent",
-                    borderColor: sel ? "var(--accent)" : "rgba(255,255,255,0.2)",
+                    border: `1px solid ${sel ? "var(--accent)" : "rgba(255,255,255,0.2)"}`,
                   }}
                 >
                   ✓
@@ -80,6 +68,7 @@ export default function FabricStep() {
           );
         })}
       </div>
+      <p style={{ fontSize: 11, color: "var(--muted)", marginTop: 12 }}>الياقة الواقفة الدائرية هي الافتراضية للثوب السعودي — التراث يبقى.</p>
     </div>
   );
 }

@@ -6,7 +6,7 @@ export default function ColorStep() {
   return (
     <div>
       <h3 style={{ fontSize: 20, margin: "0 0 6px" }}>اختر لون ثوبك</h3>
-      <p style={{ color: "var(--muted)", fontSize: 13, margin: "0 0 20px" }}>ستة ألوان مختارة بعناية — من اللؤلؤي الهادئ إلى الليلي العميق.</p>
+      <p style={{ color: "var(--muted)", fontSize: 13, margin: "0 0 20px" }}>عشرة ألوان curated — من الأبيض النقي إلى الليلي، تدرّج صحراوي هادئ.</p>
       <div
         style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 18 } as React.CSSProperties}
         className="color-grid"
@@ -76,7 +76,7 @@ export default function ColorStep() {
           );
         })}
       </div>
-      <style>{`@media(min-width:640px){ .color-grid{ grid-template-columns: repeat(6,1fr) !important; } } .color-opt:hover .color-circle{ transform:scale(1.08) }`}</style>
+      <style>{`@media(min-width:640px){ .color-grid{ grid-template-columns: repeat(5,1fr) !important; } } .color-opt:hover .color-circle{ transform:scale(1.08) }`}</style>
     </div>
   );
 }

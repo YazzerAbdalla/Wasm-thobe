@@ -31,6 +31,46 @@ export interface IAccessory {
   readonly price?: number;
 }
 
+export interface ICollar {
+  readonly id: string;
+  readonly name: string;
+  readonly description: string;
+  readonly price: number;
+  readonly thumb: string; // /images/details/collar-*.jpg or gradient fallback
+}
+
+export interface IPlacket {
+  readonly id: string;
+  readonly name: string;
+  readonly description: string;
+  readonly price: number;
+  readonly thumb: string;
+}
+
+export interface IButtonOption {
+  readonly id: string;
+  readonly name: string;
+  readonly description: string;
+  readonly price: number;
+  readonly thumb: string;
+}
+
+export interface IPocket {
+  readonly id: string;
+  readonly name: string;
+  readonly description: string;
+  readonly price: number;
+  readonly thumb: string;
+}
+
+export interface ICuff {
+  readonly id: string;
+  readonly name: string;
+  readonly description: string;
+  readonly price: number;
+  readonly thumb: string;
+}
+
 interface IBuilderState {
   currentStep: number;
   totalSteps: number;
@@ -38,12 +78,22 @@ interface IBuilderState {
   colors: IColor[];
   fabrics: IFabric[];
   accessories: IAccessory[];
+  collars: ICollar[];
+  plackets: IPlacket[];
+  buttons: IButtonOption[];
+  pockets: IPocket[];
+  cuffs: ICuff[];
   isLoadingOptions: boolean;
   optionsError: string | null;
 
   selectedColor: IColor | null;
   selectedFabric: IFabric | null;
   selectedAccessories: IAccessory[];
+  selectedCollar: ICollar | null;
+  selectedPlacket: IPlacket | null;
+  selectedButton: IButtonOption | null;
+  selectedPocket: IPocket | null;
+  selectedCuff: ICuff | null;
 
   // Guest checkout (ref)
   guestName: string;
@@ -58,12 +108,22 @@ interface IBuilderState {
   setColors: (colors: IColor[]) => void;
   setFabrics: (fabrics: IFabric[]) => void;
   setAccessories: (accessories: IAccessory[]) => void;
+  setCollars: (collars: ICollar[]) => void;
+  setPlackets: (plackets: IPlacket[]) => void;
+  setButtons: (buttons: IButtonOption[]) => void;
+  setPockets: (pockets: IPocket[]) => void;
+  setCuffs: (cuffs: ICuff[]) => void;
   setLoadingOptions: (loading: boolean) => void;
   setOptionsError: (error: string | null) => void;
 
   selectColor: (color: IColor) => void;
   selectFabric: (fabric: IFabric) => void;
   toggleAccessory: (accessory: IAccessory) => void;
+  selectCollar: (collar: ICollar) => void;
+  selectPlacket: (placket: IPlacket) => void;
+  selectButton: (button: IButtonOption) => void;
+  selectPocket: (pocket: IPocket) => void;
+  selectCuff: (cuff: ICuff) => void;
 
   setGuestName: (v: string) => void;
   setGuestCC: (v: string) => void;
@@ -85,17 +145,27 @@ export const useBuilderStore = create<IBuilderState>()(
   persist(
     (set, get) => ({
       currentStep: 1,
-      totalSteps: 4,
+      totalSteps: 5,
 
       colors: [],
       fabrics: [],
       accessories: [],
+      collars: [],
+      plackets: [],
+      buttons: [],
+      pockets: [],
+      cuffs: [],
       isLoadingOptions: false,
       optionsError: null,
 
       selectedColor: null,
       selectedFabric: null,
       selectedAccessories: [],
+      selectedCollar: null,
+      selectedPlacket: null,
+      selectedButton: null,
+      selectedPocket: null,
+      selectedCuff: null,
 
       guestName: "",
       guestCC: "+966",
@@ -108,6 +178,11 @@ export const useBuilderStore = create<IBuilderState>()(
       setColors: (colors) => set({ colors }),
       setFabrics: (fabrics) => set({ fabrics }),
       setAccessories: (accessories) => set({ accessories }),
+      setCollars: (collars) => set({ collars }),
+      setPlackets: (plackets) => set({ plackets }),
+      setButtons: (buttons) => set({ buttons }),
+      setPockets: (pockets) => set({ pockets }),
+      setCuffs: (cuffs) => set({ cuffs }),
       setLoadingOptions: (loading) => set({ isLoadingOptions: loading }),
       setOptionsError: (error) => set({ optionsError: error }),
 
@@ -123,6 +198,11 @@ export const useBuilderStore = create<IBuilderState>()(
           set({ selectedAccessories: [...current, accessory] });
         }
       },
+      selectCollar: (collar) => set({ selectedCollar: collar }),
+      selectPlacket: (placket) => set({ selectedPlacket: placket }),
+      selectButton: (button) => set({ selectedButton: button }),
+      selectPocket: (pocket) => set({ selectedPocket: pocket }),
+      selectCuff: (cuff) => set({ selectedCuff: cuff }),
 
       setGuestName: (v) => set({ guestName: v }),
       setGuestCC: (v) => set({ guestCC: v }),
@@ -135,14 +215,18 @@ export const useBuilderStore = create<IBuilderState>()(
       prevStep: () => set((s) => ({ currentStep: Math.max(s.currentStep - 1, 1) })),
 
       getTotalPrice: () => {
-        const { basePrice, selectedColor, selectedFabric, selectedAccessories } = get();
+        const { basePrice, selectedColor, selectedFabric, selectedAccessories, selectedCollar, selectedPlacket, selectedButton, selectedPocket, selectedCuff } = get();
         const colorPrice = selectedColor?.price ?? 0;
-        // Prefer additive price; fallback to multiplier for backend shapes
         const fabricPrice = selectedFabric
           ? (typeof selectedFabric.price === "number" ? selectedFabric.price : Math.round(basePrice * (selectedFabric.price_multiplier - 1)))
           : 0;
         const addonSum = selectedAccessories.reduce((sum, a) => sum + (a.extra_price ?? a.price ?? 0), 0);
-        return Math.round(basePrice + colorPrice + fabricPrice + addonSum);
+        const collarPrice = selectedCollar?.price ?? 0;
+        const placketPrice = selectedPlacket?.price ?? 0;
+        const buttonPrice = selectedButton?.price ?? 0;
+        const pocketPrice = selectedPocket?.price ?? 0;
+        const cuffPrice = selectedCuff?.price ?? 0;
+        return Math.round(basePrice + colorPrice + fabricPrice + addonSum + collarPrice + placketPrice + buttonPrice + pocketPrice + cuffPrice);
       },
 
       reset: () =>
@@ -151,6 +235,11 @@ export const useBuilderStore = create<IBuilderState>()(
           selectedColor: null,
           selectedFabric: null,
           selectedAccessories: [],
+          selectedCollar: null,
+          selectedPlacket: null,
+          selectedButton: null,
+          selectedPocket: null,
+          selectedCuff: null,
           customizationId: null,
           recommendationLabel: null,
           guestName: "",
@@ -165,6 +254,11 @@ export const useBuilderStore = create<IBuilderState>()(
         selectedColor: state.selectedColor,
         selectedFabric: state.selectedFabric,
         selectedAccessories: state.selectedAccessories,
+        selectedCollar: state.selectedCollar,
+        selectedPlacket: state.selectedPlacket,
+        selectedButton: state.selectedButton,
+        selectedPocket: state.selectedPocket,
+        selectedCuff: state.selectedCuff,
         guestName: state.guestName,
         guestCC: state.guestCC,
         guestPhone: state.guestPhone,

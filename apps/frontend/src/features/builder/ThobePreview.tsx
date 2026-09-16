@@ -1,190 +1,233 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { useBuilderStore } from "./builderStore";
 
-const DARK_COLORS = new Set(["charcoal", "navy", "midnight", "c9", "c10", "c11", "c12"]);
-
-type Fit = "modern" | "najdi";
-
 export default function ThobePreview() {
-  const { selectedColor, selectedFabric, selectedAccessories } = useBuilderStore();
+  const {
+    selectedColor,
+    selectedFabric,
+    selectedCollar,
+    selectedPlacket,
+    selectedButton,
+    selectedPocket,
+    selectedCuff,
+    currentStep,
+  } = useBuilderStore();
   const total = useBuilderStore((s) => s.getTotalPrice());
   const [showTip, setShowTip] = useState(false);
-  const [fit, setFit] = useState<Fit>("modern");
+  const [imgError, setImgError] = useState(false);
 
-  const hex = selectedColor?.hex_code ?? "#F5F0E8";
-  const isDark =
-    selectedColor ? (DARK_COLORS.has(selectedColor.id) || ["#2B2B2B", "#1A2332", "#0A0A0B", "#1a1a1a", "#000080", "#36454F"].includes(hex.toUpperCase())) : false;
+  // ---- Material Preview logic: show chosen material sheet, not thobe silhouette ----
+  // Step 1: color, 2: fabric, 3: collar, 4: placket/buttons/pocket/cuff, 5: review → fabric
+  let preview: { thumb: string; title: string; desc: string; label: string } | null = null;
 
-  const has = (id: string) => selectedAccessories.some((a) => a.id === id || a.type === id);
-  const showCollar = has("collar") || has("decoration");
-  const showButtons = has("cuff") || has("cufflinks");
-  const showPocket = has("pocket");
-  const showEmb = has("emb") || has("personalization");
-  const fabricId = selectedFabric?.id ?? "cotton";
-  const overlayOpacity = fabricId === "linen" || selectedFabric?.texture_class === "fabric-linen" ? 0.22 : fabricId === "wool" || selectedFabric?.texture_class === "fabric-wool" ? 0.08 : 0.12;
+  const fabricThumb = selectedFabric?.thumb || "";
+  const isImageThumb = (t: string) => t.startsWith("/");
 
-  const addonNames = selectedAccessories.map((a) => a.name).join(" · ");
+  if (currentStep === 1 && selectedColor) {
+    preview = {
+      thumb: "",
+      title: selectedColor.name,
+      desc: `لون ${selectedColor.name} — ${selectedColor.hex_code}`,
+      label: "اللون",
+    };
+  } else if (currentStep === 2 && selectedFabric) {
+    preview = {
+      thumb: fabricThumb,
+      title: selectedFabric.name,
+      desc: selectedFabric.description,
+      label: "الخامة — عن قرب",
+    };
+  } else if (currentStep === 3 && selectedCollar) {
+    preview = {
+      thumb: selectedCollar.thumb,
+      title: selectedCollar.name,
+      desc: selectedCollar.description,
+      label: "الياقة — تفصيل",
+    };
+  } else if (currentStep === 4) {
+    // Prioritize button > placket > pocket > cuff based on recent selection
+    if (selectedButton) {
+      preview = { thumb: selectedButton.thumb, title: selectedButton.name, desc: selectedButton.description, label: "الزر — عن قرب" };
+    } else if (selectedPlacket) {
+      preview = { thumb: selectedPlacket.thumb, title: selectedPlacket.name, desc: selectedPlacket.description, label: "فتحة الصدر" };
+    } else if (selectedCuff) {
+      preview = { thumb: selectedCuff.thumb, title: selectedCuff.name, desc: selectedCuff.description, label: "الأسورة" };
+    } else if (selectedPocket) {
+      preview = { thumb: selectedPocket.thumb, title: selectedPocket.name, desc: selectedPocket.description, label: "الجيب" };
+    }
+  } else {
+    // Review or fallback → fabric
+    if (selectedFabric) {
+      preview = { thumb: fabricThumb, title: selectedFabric.name, desc: selectedFabric.description, label: "الخامة — الملخص" };
+    }
+  }
 
-  // Sadu diamond hint opacity — slightly higher for linen
-  const saduOpacity = fabricId === "linen" ? 0.07 : fabricId === "wool" ? 0.045 : 0.035;
+  // Fallback if no preview (first load)
+  if (!preview) {
+    preview = {
+      thumb: fabricThumb || "",
+      title: selectedFabric?.name ?? "قطن مصري فاخر",
+      desc: selectedFabric?.description ?? "ملمس حريري، تهوية عالية",
+      label: "معاينة الخامة",
+    };
+  }
 
-  const thobeD = fit === "najdi" ? "M70 18 L130 18 L150 36 L150 92 L172 92 L172 280 L28 280 L28 92 L50 92 L50 36 Z" : "M70 18 L130 18 L148 36 L148 92 L168 92 L168 280 L32 280 L32 92 L52 92 L52 36 Z";
+  useEffect(() => {
+    setImgError(false);
+  }, [preview.thumb]);
+
+  const showAsColor = currentStep === 1 && selectedColor && !preview.thumb;
+  const thumbIsImage = preview.thumb ? isImageThumb(preview.thumb) : false;
 
   return (
     <aside className="glass" style={{ position: "sticky", top: 96, padding: 22, display: "flex", flexDirection: "column", gap: 18 }}>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-        <span style={{ fontFamily: "var(--font-mono)", fontSize: 11, letterSpacing: "0.08em", color: "var(--muted)" }}>معاينة حيّة</span>
-        <span style={{ fontSize: 11, color: "var(--accent)", background: "rgba(212,175,55,0.10)", border: "1px solid rgba(212,175,55,0.18)", padding: "4px 10px", borderRadius: 999 }}>تحديث فوري</span>
+        <span style={{ fontFamily: "var(--font-mono)", fontSize: 11, letterSpacing: "0.08em", color: "var(--muted)" }}>معاينة الخامة</span>
+        <span style={{ fontSize: 11, color: "var(--accent)", background: "rgba(212,175,55,0.10)", border: "1px solid rgba(212,175,55,0.18)", padding: "4px 10px", borderRadius: 999 }}>
+          {preview.label}
+        </span>
       </div>
 
-      {/* Fit toggle — Najdi vs Modern */}
-      <div
-        style={{
-          display: "flex",
-          gap: 6,
-          padding: 4,
-          borderRadius: 999,
-          background: "rgba(255,255,255,0.06)",
-          border: "1px solid rgba(255,255,255,0.06)",
-        }}
-        role="group"
-        aria-label="اختر القصّة"
-      >
-        <button
-          type="button"
-          onClick={() => setFit("modern")}
-          aria-pressed={fit === "modern"}
-          style={{
-            flex: 1,
-            padding: "7px 10px",
-            borderRadius: 999,
-            border: 0,
-            fontSize: 12,
-            fontWeight: 600,
-            background: fit === "modern" ? "var(--accent)" : "transparent",
-            color: fit === "modern" ? "#0B0B0B" : "var(--muted)",
-            transition: "all .2s ease",
-          }}
-        >
-          قصة عصرية
-        </button>
-        <button
-          type="button"
-          onClick={() => setFit("najdi")}
-          aria-pressed={fit === "najdi"}
-          style={{
-            flex: 1,
-            padding: "7px 10px",
-            borderRadius: 999,
-            border: 0,
-            fontSize: 12,
-            fontWeight: 600,
-            background: fit === "najdi" ? "var(--accent)" : "transparent",
-            color: fit === "najdi" ? "#0B0B0B" : "var(--muted)",
-            transition: "all .2s ease",
-          }}
-        >
-          قصة نجدية
-        </button>
-      </div>
-      <p style={{ fontSize: 11, color: "var(--muted)", margin: "-10px 0 0", textAlign: "center" }}>
-        {fit === "najdi" ? "أكمام أوسع وراحة تقليدية — لهيبة المجلس" : "قصة محددة وراحة يومية — لدوامك"}
-      </p>
-
+      {/* Material stage — replaces thobe SVG */}
       <div
         style={{
           background: "radial-gradient(500px 300px at 50% 20%, rgba(212,175,55,0.10), transparent 70%), linear-gradient(180deg, #1A1A18, #0E0E0D)",
           borderRadius: 16,
           border: "1px solid rgba(255,255,255,0.06)",
-          aspectRatio: "3 / 4",
+          aspectRatio: "4 / 3",
           display: "grid",
           placeItems: "center",
           overflow: "hidden",
           position: "relative",
         }}
       >
-        {/* Sadu subtle pattern — whispers heritage, not wallpaper */}
-        <motion.div
+        {/* Sadu whisper — heritage hint */}
+        <div
           aria-hidden="true"
-          animate={{ opacity: saduOpacity }}
-          transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
           style={{
             position: "absolute",
             inset: 0,
             pointerEvents: "none",
-            opacity: saduOpacity,
+            opacity: 0.04,
             backgroundImage: `url("data:image/svg+xml,%3Csvg width='28' height='28' viewBox='0 0 28 28' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M14 2l5 5-5 5-5-5z M14 14l5 5-5 5-5-5z' fill='none' stroke='%23D4AF37' stroke-width='0.6' opacity='0.9'/%3E%3C/svg%3E")`,
             backgroundSize: "28px 28px",
             mixBlendMode: "overlay" as const,
           }}
         />
 
-        <svg viewBox="0 0 200 300" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="Thobe preview" style={{ width: "64%", height: "auto", filter: "drop-shadow(0 18px 28px rgba(0,0,0,0.55))" }}>
-          <motion.path
-            d={thobeD}
-            animate={{ fill: hex, d: thobeD }}
-            transition={{ duration: 0.42, ease: [0.22, 1, 0.36, 1] }}
-            stroke={isDark ? "rgba(255,255,255,0.14)" : "rgba(0,0,0,0.06)"}
-            strokeWidth={1.2}
-          />
-          {/* collar */}
-          <motion.path
-            d="M86 18 L100 38 L114 18"
-            fill="none"
-            stroke="#D4AF37"
-            strokeWidth={1.4}
-            strokeLinejoin="round"
-            initial={false}
-            animate={{ opacity: showCollar ? 1 : 0 }}
-            transition={{ duration: 0.32 }}
-          />
-          {/* placket */}
-          <motion.rect x="96" y="38" width="8" height="78" rx="3" fill="rgba(0,0,0,0.06)" initial={false} animate={{ opacity: showButtons || showEmb ? 1 : 0 }} transition={{ duration: 0.3 }} />
-          {/* buttons */}
-          <motion.g initial={false} animate={{ opacity: showButtons ? 1 : 0 }} transition={{ duration: 0.32 }}>
-            <circle cx="100" cy="58" r={3.2} fill="#D4AF37" stroke="rgba(0,0,0,0.12)" />
-            <circle cx="100" cy="78" r={3.2} fill="#D4AF37" />
-            <circle cx="100" cy="98" r={3.2} fill="#D4AF37" />
-          </motion.g>
-          {/* pocket */}
-          <motion.rect x="122" y="96" width="22" height="16" rx="2.5" fill="none" stroke="rgba(0,0,0,0.14)" strokeWidth={1.1} initial={false} animate={{ opacity: showPocket ? 1 : 0 }} transition={{ duration: 0.32 }} />
-          {/* cuff */}
-          <motion.g initial={false} animate={{ opacity: showCollar ? 1 : 0 }} transition={{ duration: 0.32 }}>
-            <motion.rect x={fit === "najdi" ? 28 : 32} y="266" width={fit === "najdi" ? 144 : 136} height="6" rx="3" fill="rgba(212,175,55,0.22)" animate={{ x: fit === "najdi" ? 28 : 32, width: fit === "najdi" ? 144 : 136 }} transition={{ duration: 0.32 }} />
-          </motion.g>
-          <motion.path d={fit === "najdi" ? "M50 92 L28 92 L28 280 L50 280" : "M52 92 L32 92 L32 280 L52 280"} fill="none" stroke="rgba(0,0,0,0.04)" animate={{ d: fit === "najdi" ? "M50 92 L28 92 L28 280 L50 280" : "M52 92 L32 92 L32 280 L52 280"} } transition={{ duration: 0.32 }} />
-          <motion.path d={fit === "najdi" ? "M150 92 L172 92 L172 280 L150 280" : "M148 92 L168 92 L168 280 L148 280"} fill="none" stroke="rgba(0,0,0,0.04)" animate={{ d: fit === "najdi" ? "M150 92 L172 92 L172 280 L150 280" : "M148 92 L168 92 L168 280 L148 280"} } transition={{ duration: 0.32 }} />
-        </svg>
-
-        <motion.div
-          aria-hidden="true"
-          animate={{ opacity: overlayOpacity }}
-          transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
-          style={{
-            position: "absolute",
-            inset: 0,
-            pointerEvents: "none",
-            mixBlendMode: "multiply" as const,
-            backgroundImage: "repeating-linear-gradient(-8deg, rgba(0,0,0,0.06) 0 1px, transparent 1px 6px)",
-          }}
-        />
+        <AnimatePresence mode="wait">
+          {showAsColor ? (
+            <motion.div
+              key={`color-${selectedColor?.id}`}
+              initial={{ opacity: 0, scale: 0.96 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.96 }}
+              transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+              style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 16, padding: 24 }}
+            >
+              <div
+                style={{
+                  width: 148,
+                  height: 148,
+                  borderRadius: 999,
+                  background: selectedColor!.hex_code,
+                  border: "3px solid rgba(255,255,255,0.14)",
+                  boxShadow: "0 18px 40px rgba(0,0,0,0.45), 0 0 0 1px rgba(212,175,55,0.22)",
+                }}
+              />
+              <div style={{ textAlign: "center" }}>
+                <div style={{ fontSize: 14, fontWeight: 700, color: "#fff" }}>{preview.title}</div>
+                <div style={{ fontSize: 11, color: "var(--muted)", fontFamily: "var(--font-mono)", marginTop: 4 }}>{preview.desc}</div>
+              </div>
+            </motion.div>
+          ) : thumbIsImage && !imgError ? (
+            <motion.div
+              key={preview.thumb}
+              initial={{ opacity: 0, scale: 1.02 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 1.02 }}
+              transition={{ duration: 0.38, ease: [0.22, 1, 0.36, 1] }}
+              style={{ position: "absolute", inset: 0 }}
+            >
+              <img
+                src={preview.thumb}
+                alt={preview.title}
+                loading="lazy"
+                decoding="async"
+                onError={() => setImgError(true)}
+                style={{ width: "100%", height: "100%", objectFit: "cover" }}
+              />
+              <div
+                style={{
+                  position: "absolute",
+                  inset: 0,
+                  background: "linear-gradient(180deg, transparent 42%, rgba(0,0,0,0.68) 100%)",
+                  pointerEvents: "none",
+                }}
+              />
+              <div
+                style={{
+                  position: "absolute",
+                  bottom: 14,
+                  right: 14,
+                  left: 14,
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: 2,
+                }}
+              >
+                <span style={{ fontSize: 11, color: "rgba(255,255,255,0.72)", fontFamily: "var(--font-mono)", letterSpacing: "0.08em" }}>{preview.label}</span>
+                <strong style={{ fontSize: 14, color: "#fff" }}>{preview.title}</strong>
+                <span style={{ fontSize: 11, color: "rgba(255,255,255,0.66)", lineHeight: 1.6 }}>{preview.desc}</span>
+              </div>
+            </motion.div>
+          ) : (
+            <motion.div
+              key={`fallback-${preview.title}`}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              style={{
+                position: "absolute",
+                inset: 0,
+                background: preview.thumb && !thumbIsImage ? preview.thumb : "linear-gradient(135deg,#F5F0E8,#E8DCC6)",
+                display: "grid",
+                placeItems: "center",
+                padding: 24,
+                textAlign: "center",
+              }}
+            >
+              <div>
+                <div style={{ fontSize: 13, color: "rgba(0,0,0,0.55)", fontFamily: "var(--font-mono)" }}>{preview.label} — صورة قريباً</div>
+                <div style={{ fontSize: 16, fontWeight: 700, color: "#0B0B0B", marginTop: 6 }}>{preview.title}</div>
+                <div style={{ fontSize: 12, color: "rgba(0,0,0,0.58)", marginTop: 4 }}>{preview.desc}</div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
 
+      {/* Selected summary — curated fields */}
       <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
         <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13 }}>
           <span style={{ color: "var(--muted)" }}>اللون</span>
-          <strong>{selectedColor?.name ?? "أبيض لؤلؤي"}</strong>
+          <strong style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            {selectedColor?.name ?? "—"}
+            {selectedColor && <span style={{ width: 14, height: 14, borderRadius: 999, background: selectedColor.hex_code, border: "1px solid rgba(255,255,255,0.14)", display: "inline-block" }} />}
+          </strong>
         </div>
         <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13 }}>
           <span style={{ color: "var(--muted)" }}>القماش</span>
-          <strong>{selectedFabric?.name ?? "قطن مصري فاخر"}</strong>
+          <strong>{selectedFabric?.name ?? "—"}</strong>
         </div>
         <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13 }}>
-          <span style={{ color: "var(--muted)" }}>الإضافات</span>
-          <strong style={{ textAlign: "left", maxWidth: "60%", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const }}>
-            {addonNames || "— بدون إضافات"}
-          </strong>
+          <span style={{ color: "var(--muted)" }}>الياقة</span>
+          <strong>{selectedCollar?.name ?? "—"}</strong>
+        </div>
+        <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13 }}>
+          <span style={{ color: "var(--muted)" }}>الزر</span>
+          <strong>{selectedButton?.name ?? "—"}</strong>
         </div>
       </div>
 
@@ -267,9 +310,7 @@ export default function ThobePreview() {
               role="tooltip"
             >
               <div style={{ fontSize: 12, fontWeight: 700, color: "#fff", marginBottom: 6 }}>ضمان 14 يوم — إعادة تفصيل مجاناً</div>
-              <div style={{ fontSize: 11, color: "var(--muted)", lineHeight: 1.7 }}>
-                إن لم يكن المقاس على توقعك، نعيد التفصيل بلا أسئلة. يشمل التوصيل.
-              </div>
+              <div style={{ fontSize: 11, color: "var(--muted)", lineHeight: 1.7 }}>إن لم يكن المقاس على توقعك، نعيد التفصيل بلا أسئلة. يشمل التوصيل.</div>
             </motion.div>
           )}
         </AnimatePresence>
