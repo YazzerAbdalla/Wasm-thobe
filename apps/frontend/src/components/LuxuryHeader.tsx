@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
+import { motion, AnimatePresence } from "motion/react";
 
 export default function LuxuryHeader() {
   const [open, setOpen] = useState(false);
@@ -10,6 +11,29 @@ export default function LuxuryHeader() {
     if (path === "/") return location.pathname === "/";
     return location.pathname.startsWith(path);
   };
+
+  // Close on Escape + lock scroll when drawer open
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setOpen(false);
+    };
+    if (open) {
+      document.addEventListener("keydown", onKey);
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.removeEventListener("keydown", onKey);
+      document.body.style.overflow = "";
+    };
+  }, [open]);
+
+  // Close drawer on route change
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setOpen(false);
+  }, [location.pathname]);
 
   return (
     <>
@@ -30,7 +54,9 @@ export default function LuxuryHeader() {
           style={{ height: "100%", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16 }}
         >
           <button
-            aria-label="menu"
+            aria-label="القائمة"
+            aria-expanded={open}
+            aria-controls="wasm-drawer"
             onClick={() => setOpen(true)}
             style={{
               display: "inline-grid",
@@ -43,17 +69,18 @@ export default function LuxuryHeader() {
             }}
             className="burger-btn"
           >
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} style={{ width: 28, height: 28 }}>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} style={{ width: 28, height: 28 }} aria-hidden="true">
               <path d="M4 7h16M4 12h16M4 17h16" />
             </svg>
           </button>
 
-          <div
+          <button
             onClick={() => navigate("/")}
-            style={{ width: 132, cursor: "pointer", display: "flex", alignItems: "center" }}
+            aria-label="العودة للرئيسية"
+            style={{ width: 132, cursor: "pointer", display: "flex", alignItems: "center", background: "transparent", border: 0, padding: 0 }}
           >
-            <img src="/images/wasm-logo.png" alt="وسم WASM" style={{ width: 132, height: "auto", objectFit: "contain" }} />
-          </div>
+            <img src="/images/wasm-logo.png" alt="وسم WASM" loading="eager" decoding="async" width={132} height={36} style={{ width: 132, height: "auto", objectFit: "contain" }} />
+          </button>
 
           <nav
             style={{ gap: 40, alignItems: "center" }}
@@ -101,82 +128,97 @@ export default function LuxuryHeader() {
         </div>
       </header>
 
-      <div
-        onClick={() => setOpen(false)}
-        style={{
-          position: "fixed",
-          inset: 0,
-          background: "rgba(0,0,0,0.7)",
-          zIndex: 60,
-          opacity: open ? 1 : 0,
-          pointerEvents: open ? "auto" : "none",
-          transition: "opacity .3s",
-        }}
-      />
-
-      <aside
-        style={{
-          position: "fixed",
-          top: 0,
-          right: 0,
-          bottom: 0,
-          width: "80%",
-          maxWidth: 336,
-          background: "#000",
-          zIndex: 61,
-          transform: open ? "translateX(0)" : "translateX(100%)",
-          transition: "transform .34s cubic-bezier(.4,0,.2,1)",
-          display: "flex",
-          flexDirection: "column",
-          padding: 24,
-          borderLeft: "1px solid rgba(255,255,255,0.06)",
-        }}
-      >
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 40 }}>
-          <img src="/images/wasm-logo.png" alt="وسم" style={{ width: 92, height: "auto" }} />
-          <button
-            onClick={() => setOpen(false)}
-            style={{ background: "transparent", border: 0, color: "rgba(255,255,255,0.7)", fontSize: 20 }}
-            aria-label="close"
-          >
-            ✕
-          </button>
-        </div>
-        <nav style={{ display: "flex", flexDirection: "column", gap: 24, fontSize: 18 }}>
-          <Link to="/" onClick={() => setOpen(false)} style={{ color: "rgba(255,255,255,0.86)" }}>
-            الرئيسية
-          </Link>
-          <Link to="/story" onClick={() => setOpen(false)} style={{ color: "rgba(255,255,255,0.86)" }}>
-            قصتنا
-          </Link>
-          <Link to="/contact" onClick={() => setOpen(false)} style={{ color: "rgba(255,255,255,0.86)" }}>
-            تواصل معنا
-          </Link>
-          <Link to="/builder" onClick={() => setOpen(false)} style={{ color: "rgba(255,255,255,0.86)" }}>
-            صمّم ثوبك
-          </Link>
-        </nav>
-        <div style={{ marginTop: "auto", display: "flex", flexDirection: "column", gap: 10 }}>
-          <Link to="/track" onClick={() => setOpen(false)}>
-            <button className="btn btn-ghost-gold" style={{ width: "100%" }}>
-              تتبع طلبك
-            </button>
-          </Link>
-          <span
-            style={{
-              textAlign: "center",
-              fontSize: 12,
-              color: "var(--muted)",
-              padding: 8,
-              background: "rgba(255,255,255,0.04)",
-              borderRadius: 8,
-              border: "1px solid rgba(255,255,255,0.06)",
-            }}
-          >
-            وضع الضيف — اطلب مباشرة بدون حساب
-          </span>
-        </div>
-      </aside>
+      <AnimatePresence>
+        {open && (
+          <>
+            <motion.div
+              key="drawer-overlay"
+              onClick={() => setOpen(false)}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.24, ease: [0.22, 1, 0.36, 1] }}
+              style={{
+                position: "fixed",
+                inset: 0,
+                background: "rgba(0,0,0,0.7)",
+                zIndex: 60,
+              }}
+              aria-hidden="true"
+            />
+            <motion.aside
+              key="drawer"
+              id="wasm-drawer"
+              role="dialog"
+              aria-modal="true"
+              aria-label="قائمة التنقل"
+              initial={{ x: "100%" }}
+              animate={{ x: 0 }}
+              exit={{ x: "100%" }}
+              transition={{ type: "spring", damping: 28, stiffness: 320 }}
+              style={{
+                position: "fixed",
+                top: 0,
+                right: 0,
+                bottom: 0,
+                width: "80%",
+                maxWidth: 336,
+                background: "#000",
+                zIndex: 61,
+                display: "flex",
+                flexDirection: "column",
+                padding: 24,
+                borderLeft: "1px solid rgba(255,255,255,0.06)",
+              }}
+            >
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 40 }}>
+                <img src="/images/wasm-logo.png" alt="وسم" loading="lazy" decoding="async" width={92} height={24} style={{ width: 92, height: "auto" }} />
+                <button
+                  onClick={() => setOpen(false)}
+                  style={{ background: "transparent", border: 0, color: "rgba(255,255,255,0.7)", fontSize: 20 }}
+                  aria-label="إغلاق القائمة"
+                >
+                  ✕
+                </button>
+              </div>
+              <nav style={{ display: "flex", flexDirection: "column", gap: 24, fontSize: 18 }}>
+                <Link to="/" onClick={() => setOpen(false)} style={{ color: "rgba(255,255,255,0.86)" }}>
+                  الرئيسية
+                </Link>
+                <Link to="/story" onClick={() => setOpen(false)} style={{ color: "rgba(255,255,255,0.86)" }}>
+                  قصتنا
+                </Link>
+                <Link to="/contact" onClick={() => setOpen(false)} style={{ color: "rgba(255,255,255,0.86)" }}>
+                  تواصل معنا
+                </Link>
+                <Link to="/builder" onClick={() => setOpen(false)} style={{ color: "rgba(255,255,255,0.86)" }}>
+                  صمّم ثوبك
+                </Link>
+              </nav>
+              <div style={{ marginTop: "auto", display: "flex", flexDirection: "column", gap: 10 }}>
+                <Link to="/track" onClick={() => setOpen(false)}>
+                  <button className="btn btn-ghost-gold" style={{ width: "100%" }}>
+                    تتبع طلبك
+                  </button>
+                </Link>
+                <span
+                  style={{
+                    textAlign: "center",
+                    fontSize: 12,
+                    color: "var(--muted)",
+                    padding: 8,
+                    background: "rgba(255,255,255,0.04)",
+                    borderRadius: 8,
+                    border: "1px solid rgba(255,255,255,0.06)",
+                  }}
+                >
+                  وضع الضيف — اطلب مباشرة بدون حساب
+                </span>
+              </div>
+            </motion.aside>
+          </>
+        )}
+      </AnimatePresence>
 
       <style>{`
         .nav-desktop, .actions-desktop { display: none; }

@@ -40,7 +40,7 @@ export default function Hero() {
               احجز موعد قياس
             </button>
           </div>
-          <img src="/images/arrow-icon.png" alt="" style={{ width: 200, opacity: 0.9, marginBlock: 4 }} />
+          <img src="/images/arrow-icon.png" alt="" loading="lazy" decoding="async" style={{ width: 200, opacity: 0.9, marginBlock: 4 }} />
           <Link to="/story" className="link-gold" style={{ color: "var(--accent)", fontWeight: 600, fontSize: 20 }}>
             اكتشف الرحلة ↓
           </Link>
@@ -85,7 +85,7 @@ export default function Hero() {
               احجز موعد قياس
             </button>
           </div>
-          <img src="/images/arrow-icon.png" alt="" style={{ width: 200, opacity: 0.9, marginBlock: 4 }} />
+          <img src="/images/arrow-icon.png" alt="" loading="lazy" decoding="async" style={{ width: 200, opacity: 0.9, marginBlock: 4 }} />
           <Link to="/story" style={{ color: "var(--accent)", fontWeight: 600, fontSize: 20 }}>
             اكتشف الرحلة ↓
           </Link>
@@ -118,6 +118,10 @@ export default function Hero() {
           <img
             src="/images/Hero.png"
             alt="ثوب وسم — لقطة هيرو"
+            fetchPriority="high"
+            decoding="async"
+            width={1280}
+            height={720}
             style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", objectPosition: "center top", filter: "contrast(1.04) saturate(0.92)" } as React.CSSProperties}
           />
           <div

@@ -24,11 +24,21 @@ export default function StorySection() {
             className="glass"
             style={{ position: "relative", overflow: "hidden", minHeight: 380, display: "flex", flexDirection: "column", justifyContent: "flex-end", padding: 28, borderRadius: 20, borderColor: "rgba(255,255,255,0.06)" }}
           >
+            <img
+              src="/images/story-1.png"
+              alt="اختيار النسيج — يد تفحص القماش تحت الضوء"
+              loading="lazy"
+              decoding="async"
+              width={640}
+              height={380}
+              style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }}
+            />
             <div
               style={{
                 position: "absolute",
                 inset: 0,
-                background: "linear-gradient(180deg, transparent 18%, rgba(0,0,0,0.78) 100%), url('/images/story-1.png') center/cover no-repeat",
+                background: "linear-gradient(180deg, transparent 18%, rgba(0,0,0,0.78) 100%)",
+                pointerEvents: "none",
               }}
             />
             <div
@@ -62,11 +72,21 @@ export default function StorySection() {
           </article>
 
           <article className="glass" style={{ position: "relative", overflow: "hidden", minHeight: 380, display: "flex", flexDirection: "column", justifyContent: "flex-end", padding: 28, borderRadius: 20 }}>
+            <img
+              src="/images/story-2.png"
+              alt="القصّة اليدوية — مقص على طاولة التفصيل"
+              loading="lazy"
+              decoding="async"
+              width={640}
+              height={380}
+              style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }}
+            />
             <div
               style={{
                 position: "absolute",
                 inset: 0,
-                background: "linear-gradient(180deg, transparent 18%, rgba(0,0,0,0.78) 100%), url('/images/story-2.png') center/cover no-repeat",
+                background: "linear-gradient(180deg, transparent 18%, rgba(0,0,0,0.78) 100%)",
+                pointerEvents: "none",
               }}
             />
             <div
@@ -100,11 +120,21 @@ export default function StorySection() {
           </article>
 
           <article className="glass" style={{ position: "relative", overflow: "hidden", minHeight: 380, display: "flex", flexDirection: "column", justifyContent: "flex-end", padding: 28, borderRadius: 20 }}>
+            <img
+              src="/images/story-3.png"
+              alt="اللمسة الأخيرة — تطريز وأزرار صدف ومراجعة نهائية"
+              loading="lazy"
+              decoding="async"
+              width={640}
+              height={380}
+              style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }}
+            />
             <div
               style={{
                 position: "absolute",
                 inset: 0,
-                background: "linear-gradient(180deg, transparent 18%, rgba(0,0,0,0.78) 100%), url('/images/story-3.png') center/cover no-repeat",
+                background: "linear-gradient(180deg, transparent 18%, rgba(0,0,0,0.78) 100%)",
+                pointerEvents: "none",
               }}
             />
             <div

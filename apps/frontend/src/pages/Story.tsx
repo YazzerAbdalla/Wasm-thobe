@@ -79,7 +79,7 @@ export default function Story() {
           </div>
         </div>
         <div style={{ aspectRatio: "4 / 3", borderRadius: 16, overflow: "hidden", border: "1px solid rgba(255,255,255,0.08)", position: "relative" }}>
-          <img src="/images/design.png" alt="تفاصيل التصميم — وسم" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+          <img src="/images/design.png" alt="تفاصيل التصميم — وسم" loading="lazy" decoding="async" width={800} height={600} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
           <div style={{ position: "absolute", inset: 0, background: "linear-gradient(180deg, transparent 40%, rgba(0,0,0,0.62) 100%)" }} />
           <div
             style={{
